@@ -26,7 +26,7 @@ class ProcessData
 		projects := [P1, P2, P3, P4]
 		
 		//Each supervisor has a limit to their projects
-    	Jack := Supervisor(1, "Jack Black", "Single", "Microwave", "EE", "E42", 2)
+    	Jack := Supervisor(1, "Jack Black", "Single", "Microwave", "EE", "E42", 4)
 		Bob := Supervisor(2, "Bob Seger", "Married", "Nuclear", "EIE", "I10", 2)
 		
 		supervisors := [Jack, Bob]

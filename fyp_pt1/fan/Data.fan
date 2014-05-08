@@ -23,15 +23,17 @@ class Data
 		Charlie := Student(3, "Charlie", 2011, 90, 900, "cl101")
 		Delta := Student(4, "Delta", 2012, 50, 700, "del10")
 		Eagle := Student(5, "Eagle", 2008, 70, 950, "ea2011")
+		
 		students := [	Student(1, "Alex", 2010, 70, 800, "rac10"),
 						Student(2, "Bob", 2009, 80, 1000, "bob11") 
 					]
 
-		echo(students[0].toStr + " " + students[1].toStr)
+		//echo(students[0].toStr + " " + students[1].toStr)
+		
 		if(students[0].name == "Alex")
 			echo(students[0].name + " for sure")
 		else echo("not " + students[1].name)
-
+		
 		
 		//tied to alpha
         P1 := Project(1, students[0].sid, "Mr Bob", null, "BEng", "Project 1",  50, "Radiant")
@@ -134,7 +136,7 @@ const class Student
 	{
 		try
 		{
-			Str[] SubStrings := BigString.split
+			SubStrings := BigString.split
     		this.sid = SubStrings[0].toInt
     		this.name = SubStrings[1]
     		this.regYr = SubStrings[2].toInt
@@ -150,7 +152,7 @@ const class Student
 	override Str toStr()
 	{
 		//used for debugging
-		return (this.sid.toStr + " " + this.name)
+		return (this.sid.toStr + " " + this.name + " " + this.email)
 	}
     const Int sid
     const Str? name
