@@ -144,11 +144,14 @@ const class Student
     		this.marks_tot = SubStrings[4].toInt
     		this.email = SubStrings[5]
 		}
-		catch
+		catch(Err e)
 		{
-			echo("Misleading text size")
+			echo(e.msg)
 		}
 	}
+    
+   // new makestuff(|This f|?)  { if (f != null) f(this) }  {}
+       
 	override Str toStr()
 	{
 		//used for debugging

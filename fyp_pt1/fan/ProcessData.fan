@@ -24,7 +24,7 @@ class ProcessData
 		P4 := Project(4, 4, "Bob Seger", "Jack Black", "MSc", "Project 2", 80, "Radiant")
 		
 		projects := [P1, P2, P3, P4]
-		
+		//projects.each { echo(it) }
 		//Each supervisor has a limit to their projects
     	Jack := Supervisor(1, "Jack Black", "Single", "Microwave", "EE", "E42", 4)
 		Bob := Supervisor(2, "Bob Seger", "Married", "Nuclear", "EIE", "I10", 2)
@@ -34,14 +34,22 @@ class ProcessData
 		Mwaves := Preference(5, "yolo", "Project 1", "Project 2")
 		
 		
-		checkMax(supervisors, projects)
-		//valid := isValid(Mwaves, projects)
-		//echo(valid)
+		//checkMax(supervisors, projects)
+		//echo(isValid(Mwaves, projects))
 	}
 	
 	static Bool isValid(Preference pref, Project[] proj)
 	{
-		for(i := 0; i < proj.size; i++)
+        //closure isn't working properly.. need to fix
+        if(pref.pref1 != proj.map|->Str| { it.title } && pref.pref2 != proj.map|->Str| { it.title })
+        {
+            
+            return false
+        }
+        
+        return true
+        /*
+		for(i :=0; i < proj.size; i++)
 		{
 			//checks that project title matches either preference
 			//no match returns false
@@ -49,6 +57,10 @@ class ProcessData
 				return false
 		}
 		return true
+		
+        if(proj.each {it} != pref.pref1 && proj.each != pref.pref2)
+            return false
+        return true*/
 		
 	}
 	
