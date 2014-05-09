@@ -136,12 +136,12 @@ const class Student
 	{
 		try
 		{
-			SubStrings := BigString.split
-    		this.sid = SubStrings[0].toInt
+			SubStrings := BigString.split.map { toInt(10, false) ?: it }
+    		this.sid = SubStrings[0]
     		this.name = SubStrings[1]
-    		this.regYr = SubStrings[2].toInt
-    		this.marks = SubStrings[3].toInt
-    		this.marks_tot = SubStrings[4].toInt
+    		this.regYr = SubStrings[2]
+    		this.marks = SubStrings[3]
+    		this.marks_tot = SubStrings[4]
     		this.email = SubStrings[5]
 		}
 		catch(Err e)
@@ -150,7 +150,11 @@ const class Student
 		}
 	}
     
-   // new makestuff(|This f|?)  { if (f != null) f(this) }  {}
+    new makestuff(|This|? f := null)
+	{ 
+		if (f != null) 
+			f(this)
+	}
        
 	override Str toStr()
 	{
@@ -180,9 +184,9 @@ const class Project
             this.mark2 = mark2
             this.team = team	
 		}
-		catch
+		catch(Err e)
 		{
-			echo("Formatting error")
+			echo(e.msg)
 		}
     }
 	override Str toStr()
@@ -203,27 +207,27 @@ const class Project
 
 const class Preference
 {
-    new make(Int eeid, Str? comments, Str? pref1, Str? pref2)
+    new make(Int id, Str? comments, Str? pref1, Str? pref2)
     {
 		try
 		{
-            this.eeid = eeid
+            this.id = id
             this.comments = comments
             this.pref1 = pref1
     		this.pref2 = pref2
 		}
-		catch
+		catch(Err e)
 		{
-			echo("Formatting error")
+			echo(e.msg)
 		}
     }
 	override Str toStr()
 	{
 		//used for debugging
-		return (this.eeid.toStr)
+		return (this.id.toStr)
 	}
 	
-    const Int eeid
+    const Int id
     const Str? comments
     const Str? pref1
     const Str? pref2
@@ -231,11 +235,11 @@ const class Preference
 
 const class Supervisor
 {
-	new make(Int eeid, Str? name, Str? status, Str? categ, Str? dept, Str? group, Int max)
+	new make(Int supid, Str? name, Str? status, Str? categ, Str? dept, Str? group, Int max)
 	{
 		try
 		{
-    		this.eeid = eeid
+    		this.supid = supid
     		this.name = name
     		this.status = status
     		this.categ = categ
@@ -243,17 +247,17 @@ const class Supervisor
     		this.group = group
     		this.max = max
 		}
-		catch
+		catch(Err e)
 		{
-			echo("Formatting error")
+			echo(e.msg)
 		}
 	}
 	override Str toStr()
 	{
 		//used for debugging
-		return (this.eeid.toStr + " " + this.name)
+		return (this.supid.toStr + " " + this.name)
 	}
-    const Int eeid
+    const Int supid
     const Str? name
     const Str? status
     const Str? categ
