@@ -29,7 +29,7 @@ class ProcessData
 		others := projects.map { it.title }
 
 		//Each supervisor has a limit to their projects
-    	Jack := Supervisor(1, "Jack Black", "Single", "Microwave", "EE", "E42", 4)
+    	Jack := Supervisor(1, "Jack Black", "Single", "Microwave", "EE", "E42", 2)
 		Bob := Supervisor(2, "Bob Seger", "Married", "Nuclear", "EIE", "I10", 2)
 		
 		supervisors := [Jack, Bob]
@@ -37,54 +37,24 @@ class ProcessData
 		Mwaves := Preference(5, "yolo", "Project 1", "Project 2")
 		
 		
-		//checkMax(supervisors, projects)
+		checkMax(supervisors, projects)
 		echo(isValid(Mwaves, projects))
 	}
 	
 	static Bool isValid(Preference pref, Project[] proj)
 	{
         return (proj.eachWhile { (it.title != pref.pref1 && it.title != pref.pref2) ? false : null} ?: true)
-
-		//return true
-        /*
-		for(i :=0; i < proj.size; i++)
-		{
-			//checks that project title matches either preference
-			//no match returns false
-			if(proj[i].title != pref.pref1 && proj[i].title != pref.pref2)
-				return false
-		}
-		return true
-		
-        if(proj.each {it} != pref.pref1 && proj.each != pref.pref2)
-            return false
-        return true*/
-		
 	}
 	
 	static Void checkMax(Supervisor[] s, Project[] p)
     {
-		//count := 0
-    	for(i := 0; i < s.size; i++)
-		{
-			//checks supervisor name in list of supervisors
-			//counts how many times his name is mentioned
-			//excessive matching returns prematurely
+		s.each |that|
+		{ 
 			count := 0
-			for(j := 0; j < p.size; j++)
-			{
-    			if(s[i].name == p[j].sup1 || s[i].name == p[j].sup2)
-    			{
-    				count++
-    				
-					
-    			}
-			}
-			if(count > s[i].max)
-				echo("Too many projects for " + s[i].name +". Limit is " + s[i].max + " but number of projects assigned is $count")
-			else
-				echo ("No issues for " + s[i].name)
-		}
-		
+			p.each { if(that.name == it.sup1 || that.name == it.sup2) count++ } 
+			if(count > that.max)
+				echo("Too many projects for " + that.name + ". Limit is " + that.max + " but number of projects assigned is $count")
+			else echo("No issues detected for " + that.name)
+		}		
     }
 }
