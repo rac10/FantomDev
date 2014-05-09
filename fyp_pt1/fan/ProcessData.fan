@@ -43,7 +43,6 @@ class ProcessData
 	
 	static Bool isValid(Preference pref, Project[] proj)
 	{
-        //closure isn't working properly.. need to fix
         return (proj.eachWhile { (it.title != pref.pref1 && it.title != pref.pref2) ? false : null} ?: true)
 
 		//return true
