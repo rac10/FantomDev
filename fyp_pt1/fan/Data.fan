@@ -94,20 +94,9 @@ class Data
 	{
 		tmp := File(`input.txt`)
 		tmp.open("r")
-		something := tmp.readAllLines
-		//echo(something)
-		//yay this works now!
-		//EVEN FUCKIN SIMPLER HOLY SHIT
-		thistest := something.map { Student(it) }
-		//something.each { thistest.add(it) }
-		/*
-		thistest.size = something.size
-		for(i := 0; i < something.size; i++)
-		{
-			thistest[i] = Student(something[i])
-			i++
-		}*/
-		echo(thistest[0].toStr + " " + thistest[1].toStr + " " + thistest[2].toStr)
+		lines := tmp.readAllLines
+		thistest := lines.map { Student(it) }
+		//echo(thistest[0].toStr + " " + thistest[1].toStr + " " + thistest[2].toStr)
 	}
 	
 	
