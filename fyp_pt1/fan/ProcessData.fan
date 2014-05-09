@@ -29,13 +29,13 @@ class ProcessData
 		others := projects.map { it.title }
 
 		//Each supervisor has a limit to their projects
-    	Jack := Supervisor(1, "Jack Black", "Single", "Microwave", "EE", "E42", 2)
-		Bob := Supervisor(2, "Bob Seger", "Married", "Nuclear", "EIE", "I10", 2)
+    	Jack := Supervisor(1, "Jack Black", "Single", "Microwave", "EE", "E42", (1..5).random)
+		Bob := Supervisor(2, "Bob Seger", "Married", "Nuclear", "EIE", "I10", (1..5).random)
 		
 		supervisors := [Jack, Bob]
 		
 		Mwaves := Preference(5, "yolo", "Project 1", "Project 2")
-		
+		//supposed to deal with ranks or something
 		
 		checkMax(supervisors, projects)
 		echo(isValid(Mwaves, projects))
@@ -43,11 +43,11 @@ class ProcessData
 	
 	static Bool isValid(Preference pref, Project[] proj)
 	{
-        return (proj.eachWhile { (it.title != pref.pref1 && it.title != pref.pref2) ? false : null} ?: true)
+        proj.eachWhile { (it.title != pref.pref1 && it.title != pref.pref2) ? false : null} ?: true
 	}
 	
 	static Void checkMax(Supervisor[] s, Project[] p)
-    {
+	{
 		s.each |that|
 		{ 
 			count := 0
@@ -56,5 +56,5 @@ class ProcessData
 				echo("Too many projects for " + that.name + ". Limit is " + that.max + " but number of projects assigned is $count")
 			else echo("No issues detected for " + that.name)
 		}		
-    }
+	}
 }
