@@ -18,45 +18,31 @@ class Data
 		
 		readFile
 		//All local students
-		Alpha := Student(1, "Alex", 2010, 70, 800, "rac10")		
-		Beta := Student(2, "Bob", 2009, 80, 1000, "bob11")
-		Charlie := Student(3, "Charlie", 2011, 90, 900, "cl101")
-		Delta := Student(4, "Delta", 2012, 50, 700, "del10")
-		Eagle := Student(5, "Eagle", 2008, 70, 950, "ea2011")
+		Alpha := Student(1, "Alex", 2010, "rac10")		
+		Beta := Student(2, "Bob", 2009, "bob11")
+		Charlie := Student(3, "Charlie", 2011, "cl101")
+		Delta := Student(4, "Delta", 2012, "del10")
+		Eagle := Student(5, "Eagle", 2008, "ea2011")
 		
-		students := [	Student(1, "Alex", 2010, 70, 800, "rac10"),
-						Student(2, "Bob", 2009, 80, 1000, "bob11") 
-					]
-
-		//echo(students[0].toStr + " " + students[1].toStr)
+		students := [Alpha, Beta, Charlie].toImmutable
+			
+		//alpha
+        P1 := Project(1, 1, "Mr Bob", null, "BEng", "Project 1")
+		//beta
+		P2 := Project(2, 2, "Mr Jack", null, "MEng", "Project 2")
+		//charlie
+		P3 := Project(3, 3, "Mr James", "Mr Shane", "MSc", "Project 3")
 		
-		if(students[0].name == "Alex")
-			echo(students[0].name + " for sure")
-		else echo("not " + students[1].name)
-		
-		
-		//tied to alpha
-        P1 := Project(1, students[0].sid, "Mr Bob", null, "BEng", "Project 1",  50, "Radiant")
-		//tied to beta
-		P2 := Project(2, 2, "Mr Jack", null, "MEng", "Project 2",  70, "Dire")
-		
-		projects := [P1, P2]
+		projects := [P1, P2, P3].toImmutable
 		
 		//Each supervisor has a limit to their projects
-    	Jack := Supervisor(5, "Jack Black", "Single", "Microwave", "EE", "E42", 3)
+    	Jack := Supervisor(5, "Jack Black", "EE", "E42", 3)
 		
 		Mwaves := Preference(5, "yolo", "Project 1", "Project 2")
 		//valid = ProcessData::isValid(Mwaves, projects)
-        Help := Sp(Alpha, P1)
-		Assist := Sp(Beta, P1)
-        echo("$Alpha.name started in $Alpha.regYr")
-        echo("$P1.sup1 is dealing with $P1.title")
-      //  echo("$Help.student.name has supervisor $Help.project.sup")
-    	echo("$Jack.name is the supervisor of project $P1.title")
-        a := (0..360).random
-		if(Help == Sp(Alpha, P1))
-			echo("Equals")
-		else echo("Nope")
+        Help := StudProj(Alpha, P1)
+		Assist := StudProj(Beta, P1)
+		
 		/* projs = pid -> Project
 		studs = sid -> Student
 		sups = supid -> Supervisor
@@ -66,12 +52,30 @@ class Data
 		suplimits = supid -> limit
 		ownprojs = sid -> pid
 		*/
+
+		//need to declare a map of type Student:Project first
+		rank := Student:Project[:]
+
+		for(i := 0; i < students.size; i++)
+		{
+			rank.add(students[i], projects[i])
+		}
+//		echo(rank)
+//		rank.remove(Beta)
+//		echo(rank)
 		
-		
-    	//projs := [Alpha.sid:P1, Beta.sid:P1]
-		//studs := [Alpha.sid:Alpha, Beta.sid:Beta]
-		//sups := [Jack.eeid:Jack]
-		//deletes := [Help:Alpha, Assist:Beta]
+		echo(ProcessData.mapValid(rank))
+		//rank.each |p, s| { rank[s as students] = p as projects  }
+		/*
+		students.each |that|
+		{
+			projects.each { rank[that] = it }
+		}*/
+		/*
+		rank := [students:projects]
+		echo(rank)
+		rank.remove(students)
+		echo(rank)*/
 
 
 		
@@ -96,7 +100,10 @@ class Data
 		tmp.open("r")
 		lines := tmp.readAllLines
 		thistest := lines.map { Student(it) }
-		//echo(thistest[0].toStr + " " + thistest[1].toStr + " " + thistest[2].toStr)
+//		echo(thistest[0].toStr + " " + thistest[1].toStr + " " + thistest[2].toStr)
+//		Alpha := Student(1, "Alex", 2010, "rac10")	
+//		thistest.remove([1, "Alex", 2010, "rac10"])
+//		echo(thistest[0].toStr + " " + thistest[1].toStr)
 	}
 	
 	
@@ -104,20 +111,18 @@ class Data
 
 const class Student
 {
-    new make(Int sid, Str name, Int regYr, Int marks, Int marks_tot, Str email)
+    new make(Int sid, Str name, Int regYr, Str email)
     {
 		try
 		{
             this.sid = sid
             this.name = name
             this.regYr = regYr
-            this.marks = marks
-            this.marks_tot = marks_tot
             this.email = email
 		}
-		catch
+		catch(Err e)
 		{
-			echo("Formatting error")
+			echo(e.msg)
 		}
     }
 	
@@ -129,9 +134,7 @@ const class Student
     		this.sid = SubStrings[0]
     		this.name = SubStrings[1]
     		this.regYr = SubStrings[2]
-    		this.marks = SubStrings[3]
-    		this.marks_tot = SubStrings[4]
-    		this.email = SubStrings[5]
+    		this.email = SubStrings[3]
 		}
 		catch(Err e)
 		{
@@ -139,7 +142,7 @@ const class Student
 		}
 	}
     
-    new makestuff(|This|? f := null)
+    new makeSpecial(|This|? f := null)
 	{ 
 		if (f != null) 
 			f(this)
@@ -153,14 +156,12 @@ const class Student
     const Int sid
     const Str? name
     const Int regYr
-    const Int marks
-    const Int marks_tot
     const Str? email
 }
 
 const class Project
 {
-    new make(Int pid, Int studid, Str? sup1, Str? sup2, Str? tstream, Str? title, Int mark2, Str? team)
+    new make(Int pid, Int studid, Str? sup1, Str? sup2, Str? tstream, Str? title)
     {
 		try
 		{
@@ -170,8 +171,6 @@ const class Project
     		this.sup2 = sup2
             this.tstream = tstream
             this.title = title
-            this.mark2 = mark2
-            this.team = team	
 		}
 		catch(Err e)
 		{
@@ -181,17 +180,15 @@ const class Project
 	override Str toStr()
 	{
 		//used for debugging
-		return (this.pid.toStr)
+		return (this.pid.toStr + " " + this.title)
 	}
 	
     const Int pid
+    const Int studid
     const Str? sup1
 	const Str? sup2
-    const Int studid
     const Str? tstream
     const Str? title
-    const Int mark2
-    const Str? team
 }
 
 const class Preference
@@ -224,14 +221,13 @@ const class Preference
 
 const class Supervisor
 {
-	new make(Int supid, Str? name, Str? status, Str? categ, Str? dept, Str? group, Int max)
+	new make(Int supid, Str? name, Str? dept, Str? group, Int max)
 	{
 		try
 		{
     		this.supid = supid
     		this.name = name
-    		this.status = status
-    		this.categ = categ
+
     		this.dept = dept
     		this.group = group
     		this.max = max
@@ -248,14 +244,12 @@ const class Supervisor
 	}
     const Int supid
     const Str? name
-    const Str? status
-    const Str? categ
     const Str? dept
     const Str? group
 	const Int max
 }
 
-const class Sp
+const class StudProj
 {
     new make(Student s, Project p)
     {
@@ -268,7 +262,7 @@ const class Sp
     
     override Bool equals(Obj? x)
     {
-        y:= x as Sp
+        y:= x as StudProj
         return (student == y?.student && project == y?.project)
     
     }
@@ -281,7 +275,6 @@ const class Sp
 
 mixin Constraint
 {
-	abstract Str? check_preference(Sp sp, [Sp:Int] allpr)
+	abstract Str? check_preference(StudProj sp, [StudProj:Int] allpr)
 
 }
-
