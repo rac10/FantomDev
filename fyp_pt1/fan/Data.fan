@@ -15,7 +15,7 @@ class Data
 {
     static Void main(Str[] args)
     {
-		readFile
+		//readFile
 		//All local students
 		Alpha := Student(1, "Alex", 2010, "rac10")		
 		Beta := Student(2, "Bob", 2009, "bob11")
@@ -37,9 +37,9 @@ class Data
 		//Each supervisor has a limit to their projects
     	Jack := Supervisor(5, "Jack Black", "EE", "E42", 3)
 		
-		Mwaves := Preference(5, "yolo", "Project 1", "Project 2")
-        Help := StudProj(Alpha, P1)
-		Assist := StudProj(Beta, P1)
+//		Mwaves := Preference(5, "yolo", "Project 1", "Project 2")
+//        Help := StudProj(Alpha, P1)
+//		Assist := StudProj(Beta, P1)
 		
 		/* projs = pid -> Project
 		studs = sid -> Student
@@ -80,14 +80,11 @@ class Data
 	
 	static Void readFile()
 	{
+		//reads from input file
 		tmp := File(`input.txt`)
 		tmp.open("r")
 		lines := tmp.readAllLines
 		thistest := lines.map { Student(it) }
-//		echo(thistest[0].toStr + " " + thistest[1].toStr + " " + thistest[2].toStr)
-//		Alpha := Student(1, "Alex", 2010, "rac10")	
-//		thistest.remove([1, "Alex", 2010, "rac10"])
-//		echo(thistest[0].toStr + " " + thistest[1].toStr)
 	}
 	
 	
