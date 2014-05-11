@@ -15,7 +15,6 @@ class Data
 {
     static Void main(Str[] args)
     {
-		
 		readFile
 		//All local students
 		Alpha := Student(1, "Alex", 2010, "rac10")		
@@ -24,7 +23,7 @@ class Data
 		Delta := Student(4, "Delta", 2012, "del10")
 		Eagle := Student(5, "Eagle", 2008, "ea2011")
 		
-		students := [Alpha, Beta, Charlie].toImmutable
+		students := [Alpha, Beta, Charlie]
 			
 		//alpha
         P1 := Project(1, 1, "Mr Bob", null, "BEng", "Project 1")
@@ -33,13 +32,12 @@ class Data
 		//charlie
 		P3 := Project(3, 3, "Mr James", "Mr Shane", "MSc", "Project 3")
 		
-		projects := [P1, P2, P3].toImmutable
+		projects := [P1, P2, P3]
 		
 		//Each supervisor has a limit to their projects
     	Jack := Supervisor(5, "Jack Black", "EE", "E42", 3)
 		
 		Mwaves := Preference(5, "yolo", "Project 1", "Project 2")
-		//valid = ProcessData::isValid(Mwaves, projects)
         Help := StudProj(Alpha, P1)
 		Assist := StudProj(Beta, P1)
 		
@@ -52,32 +50,18 @@ class Data
 		suplimits = supid -> limit
 		ownprojs = sid -> pid
 		*/
-
+		
 		//need to declare a map of type Student:Project first
 		rank := Student:Project[:]
+		maxSize := students.size
+		//randomise the students and projects list
+		students.shuffle
+		projects.shuffle
+		//populate rank
+		students.each |s, i| { rank[s] = projects[i] }
 
-		for(i := 0; i < students.size; i++)
-		{
-			rank.add(students[i], projects[i])
-		}
-//		echo(rank)
-//		rank.remove(Beta)
-//		echo(rank)
-		
-		echo(ProcessData.mapValid(rank))
-		//rank.each |p, s| { rank[s as students] = p as projects  }
-		/*
-		students.each |that|
-		{
-			projects.each { rank[that] = it }
-		}*/
-		/*
-		rank := [students:projects]
 		echo(rank)
-		rank.remove(students)
-		echo(rank)*/
-
-
+		echo(ProcessData.mapValid(rank))
 		
         /*
         need to generate initial set of test data

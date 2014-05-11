@@ -46,9 +46,9 @@ class ProcessData
         proj.eachWhile { (it.title != pref.pref1 && it.title != pref.pref2) ? false : null} ?: true
 	}
 	
-	static Bool mapValid(Student:Project asd)
+	static Bool mapValid(Student:Project sp)
 	{
-        asd.eachWhile |p, s| { (p.studid != s.sid) ? false : null} ?: true
+		sp.any |p, s| { p.studid == s.sid  }
 	}
 	
 	static Void checkMax(Supervisor[] s, Project[] p)
