@@ -24,19 +24,29 @@ class Data
 		Eagle := Student(5, "Eagle", 2008, "ea2011")
 		
 		students := [Alpha, Beta, Charlie]
-			
-		//alpha
+		stdList := (1..10).map { Student (it, "Stud" + it.toStr, 2050-it, "stud"+ (08..14).random.toStr)}
+		echo(stdList)
+		try
+		{
+			echo(stdList[13])
+		}
+		catch(Err e)
+		{
+			echo(e.msg)
+		}
+		
         P1 := Project(1, 1, "Mr Bob", null, "BEng", "Project 1")
-		//beta
 		P2 := Project(2, 2, "Mr Jack", null, "MEng", "Project 2")
-		//charlie
 		P3 := Project(3, 3, "Mr James", "Mr Shane", "MSc", "Project 3")
 		
 		projects := [P1, P2, P3]
-		
+		projList := (1..10).map { Project(it, it, "Prof" + it.toStr, [null, "Dr " + it.toStr].random, ["BEng", "MEng", "MSc"].random, "Project" + it.toStr )}
+		echo(projList)
 		//Each supervisor has a limit to their projects
     	Jack := Supervisor(5, "Jack Black", "EE", "E42", 3)
 		
+		supList := (1..10).map { Supervisor(it, "Prof" + it.toStr, ["E", "I"].random, ["E", "I"].random + (10..20).random.toStr, (1..5).random) }
+		echo(supList)
 //		Mwaves := Preference(5, "yolo", "Project 1", "Project 2")
 //        Help := StudProj(Alpha, P1)
 //		Assist := StudProj(Beta, P1)
@@ -208,7 +218,6 @@ const class Supervisor
 		{
     		this.supid = supid
     		this.name = name
-
     		this.dept = dept
     		this.group = group
     		this.max = max

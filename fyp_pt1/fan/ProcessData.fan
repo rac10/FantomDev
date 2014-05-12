@@ -10,9 +10,6 @@
 
 class ProcessData
 {
-	new make()
-	{}
-	
 	static Void main()
 	{
 		//Projects
