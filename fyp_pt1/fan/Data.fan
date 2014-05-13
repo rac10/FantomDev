@@ -184,14 +184,15 @@ const class Project
 
 const class Preference
 {
-    new make(Int id, Str? comments, Str? pref1, Str? pref2)
+    new make(Student s, Project p, Str comment, Float value)
     {
 		try
 		{
-            this.id = id
-            this.comments = comments
-            this.pref1 = pref1
-    		this.pref2 = pref2
+            this.sid = s.sid
+			this.pid = p.pid
+			this.title = p.title
+			this.comment = comment
+			this.value = value
 		}
 		catch(Err e)
 		{
@@ -201,13 +202,14 @@ const class Preference
 	override Str toStr()
 	{
 		//used for debugging
-		return (this.id.toStr)
+		return (this.sid.toStr + " " + this.pid.toStr + " " + this.title)
 	}
 	
-    const Int id
-    const Str? comments
-    const Str? pref1
-    const Str? pref2
+    const Int sid
+	const Int pid
+	const Str? title
+    const Str? comment
+	const Float value
 }
 
 const class Supervisor
