@@ -75,4 +75,11 @@ class ProcessData
 			else echo("No issues detected for " + that.name)
 		}		
 	}
+	
+	static Void removePrefs(Preference[] p, Student:Project rank)
+	{
+		//go through list of constraints individually
+		//remove prefs
+		//no of proj for each supervisor = no. of projs supervisor can allocate +/- small random number
+	}
 }

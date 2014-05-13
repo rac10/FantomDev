@@ -3,13 +3,17 @@ class Statistics
 {
 	static Void main()
 	{
-		stdList := (1..10).map { Student (it, "Stud" + it.toStr, 2050-it, "stud"+ (08..14).random.toStr)}
-		projList := (1..10).map { Project(it, it, "Prof" + it.toStr, [null, "Dr " + it.toStr].random, ["BEng", "MEng", "MSc"].random, "Project" + it.toStr )}
+		stdList := (1..10).map { Student (it, "Stud" + it.toStr, 2050-it, "stud"+ (08..14).random.toStr) }
+		projList := (1..15).map { Project(it, it, "Prof" + (1..10).random.toStr, [null, "Dr " + it.toStr].random, ["BEng", "MEng", "MSc"].random, "Project" + it.toStr) }
 		supList := (1..10).map { Supervisor(it, "Prof" + it.toStr, ["E", "I"].random, ["E", "I"].random + (10..20).random.toStr, (1..5).random) }
-		MC(stdList, projList, supList)
+		rank := Student:Project[:]
+		stdList.shuffle
+		projList.shuffle
+		stdList.each |s, i| { rank[s] = projList[i]  }
+		MC(stdList, projList, supList, rank)
 	}
 	
-	static Void MC(Student[] students, Project[] projects, Supervisor[] supervisors)
+	static Void MC(Student[] students, Project[] projects, Supervisor[] supervisors, Student:Project rank)
 	{
 		//look at each student in a random order
 		//allocate student, highest ranked remaining project
@@ -17,26 +21,53 @@ class Statistics
 		//simulated allocation is repeated many times using random shuffles of student order & allocation stats are collected
 		//need Project:Student map
 		//need Supervisor:Int map and count how many projects have been allocated to each supervisor
+		
+		//the map of the assigned projects
 		projAssign := Project:Student[:]
-		//counts how many projects has been assigned
+		//counts how many projects has been allocated
 		projAlloc := Supervisor:Int[:]
 		maxSize := projects.size
 		//randomise the students and projects list
 		projects.shuffle
 		students.shuffle
 		//populate assigned projects
-		projects.each |p, i| { projAssign[p] = students[i] }
-		supervisors.each { projAlloc[it] = 0  } //initialisation
-		
-		echo(projects.getSafe(50))
+		projects.each |p, i| 
+		{ 
+			if(students.getSafe(i) != null)
+				projAssign[p] = students[i]
+			else projAssign[p] = Student(999, "TBD", 9999, "TBD")
+			
+		} 
+			//projects.each |p, i| { projAssign[p] = students[i] }
+		supervisors.each { projAlloc.getOrAdd(it) { 0 }}//initialisation
+		//projAlloc[it] = 0
+		//for each supervisor
+		//count how many times each supervisor has been allocated a project
+		//only counts mandatory supervisor
+		projAlloc.each |i, s|
+		{ 
+			projects.each 
+			{ 
+				if(s.name == it.sup1)
+					projAlloc[s]++
+			}
+			if(projAlloc[s] > s.max)
+			{
+				echo("Max limit of " + s.max + " surpassed. Currently assigned " + projAlloc[s] + " projects. Resetting to infinity..")
+				projAlloc[s] = 999
+			}
+			else echo("No problems for " + s.name + " with " + s.max + " limit but currently has " + projAlloc[s] + " projects")
+		}
+		//projects.each { echo(it.sup1 + " " + it.sup2)  }
+		projAlloc.each |i, s| { echo(s.toStr + " with count " + projAlloc[s])  }
 		//need to initialise p if it does not exist
+		/*
 		if(projects.getSafe(50) == null)
 		{
 			projAssign[projects.random] = students.random
 		//	projAssign.add([p.random:s.random])
-		}
-		projAlloc.each |i, s| { if(true) i++  }
-		echo(projects)
+		}*/
+		//echo(projects)
 		
 	}
 }

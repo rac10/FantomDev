@@ -45,25 +45,13 @@ class Data
 		//Each supervisor has a limit to their projects
     	Jack := Supervisor(5, "Jack Black", "EE", "E42", 3)
 		
-		supList := (1..10).map { Supervisor(it, "Prof" + it.toStr, ["E", "I"].random, ["E", "I"].random + (10..20).random.toStr, (1..5).random) }
+		supList := (1..10).map { Supervisor(it, "Prof" + it.toStr, ["E", "I"].random, ["E", "I"].random + (10..20).random.toStr, 1+(1..5).random) }
 		echo(supList)
-//		Mwaves := Preference(5, "yolo", "Project 1", "Project 2")
-//        Help := StudProj(Alpha, P1)
+//      Help := StudProj(Alpha, P1)
 //		Assist := StudProj(Beta, P1)
-		
-		/* projs = pid -> Project
-		studs = sid -> Student
-		sups = supid -> Supervisor
-		deletes = Sp -> Deletion
-		constraints = Sp -> Constraint
-		prefs = sid -> Preference
-		suplimits = supid -> limit
-		ownprojs = sid -> pid
-		*/
 		
 		//need to declare a map of type Student:Project first
 		rank := Student:Project[:]
-		maxSize := students.size
 		//randomise the students and projects list
 		students.shuffle
 		projects.shuffle
