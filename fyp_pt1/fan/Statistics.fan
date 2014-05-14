@@ -3,13 +3,27 @@ class Statistics
 {
 	static Void main()
 	{
-		stdList := (1..10).map { Student (it, "Stud" + it.toStr, 2050-it, "stud"+ (08..14).random.toStr) }
-		projList := (1..15).map { Project(it, it, "Prof" + (1..10).random.toStr, [null, "Dr " + it.toStr].random, ["BEng", "MEng", "MSc"].random, "Project" + it.toStr) }
+		stdList := (1..15).map { Student (it, "Stud" + it.toStr, 2050-it, "stud"+ (08..14).random.toStr) }
+		projList := (1..10).map { Project(it, it, "Prof" + (1..10).random.toStr, [null, "Dr " + it.toStr].random, ["BEng", "MEng", "MSc"].random, "Project" + it.toStr) }
 		supList := (1..10).map { Supervisor(it, "Prof" + it.toStr, ["E", "I"].random, ["E", "I"].random + (10..20).random.toStr, (1..5).random) }
 		rank := Student:Project[:]
 		stdList.shuffle
 		projList.shuffle
-		stdList.each |s, i| { rank[s] = projList[i]  }
+		stdList.each |s, i|
+		{ 
+			try
+			{
+				//assign normally
+    			if(projList.getSafe(i) != null)
+    				rank[s] = projList[i]
+    			else //if no more projects available, randomly assign project to student
+    				rank[s] = projList.random
+			}
+			catch(Err e)
+			{
+				echo(e.msg)
+			}
+		}
 		MC(stdList, projList, supList, rank)
 	}
 	
@@ -33,14 +47,23 @@ class Statistics
 		//populate assigned projects
 		projects.each |p, i| 
 		{ 
-			if(students.getSafe(i) != null)
-				projAssign[p] = students[i]
-			else projAssign[p] = Student(999, "TBD", 9999, "TBD")
-			
+			//populate projAssign
+			//if null then randomly choose student
+			try
+			{
+    			if(students.getSafe(i) != null)
+    				projAssign[p] = students[i]
+//    			else
+//    				projAssign[p] = students.random
+			}
+			catch(Err e)
+			{
+				echo(e.msg)
+			}	
 		} 
-			//projects.each |p, i| { projAssign[p] = students[i] }
-		supervisors.each { projAlloc.getOrAdd(it) { 0 }}//initialisation
-		//projAlloc[it] = 0
+		//projAssign.each |s, p| { if(projAssign[p] == null) break }
+		//initialisation
+		supervisors.each { projAlloc.getOrAdd(it) { 0 }}
 		//for each supervisor
 		//count how many times each supervisor has been allocated a project
 		//only counts mandatory supervisor
@@ -53,13 +76,14 @@ class Statistics
 			}
 			if(projAlloc[s] > s.max)
 			{
-				echo("Max limit of " + s.max + " surpassed. Currently assigned " + projAlloc[s] + " projects. Resetting to infinity..")
+				echo("Max limit of " + s.max + " for " + s.name + " surpassed. Currently assigned " + projAlloc[s] + " projects. Resetting to infinity..")
 				projAlloc[s] = 999
 			}
 			else echo("No problems for " + s.name + " with " + s.max + " limit but currently has " + projAlloc[s] + " projects")
 		}
 		//projects.each { echo(it.sup1 + " " + it.sup2)  }
 		projAlloc.each |i, s| { echo(s.toStr + " with count " + projAlloc[s])  }
+
 		//need to initialise p if it does not exist
 		/*
 		if(projects.getSafe(50) == null)
