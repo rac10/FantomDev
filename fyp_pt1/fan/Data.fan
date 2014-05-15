@@ -172,11 +172,11 @@ const class Project
 
 const class Preference
 {
-    new make(Student s, Project p, Str comment, Float value)
-    {
+	new make(Student s, Project p, Str comment, Float value)
+	{
 		try
 		{
-            this.sid = s.sid
+			this.sid = s.sid
 			this.pid = p.pid
 			this.title = p.title
 			this.comment = comment
@@ -186,7 +186,7 @@ const class Preference
 		{
 			echo(e.msg)
 		}
-    }
+	}
 	override Str toStr()
 	{
 		//used for debugging
