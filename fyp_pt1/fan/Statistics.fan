@@ -7,7 +7,7 @@ class Statistics
 		projList := (1..10).map { Project(it, it, "Prof" + (1..10).random.toStr, [null, "Dr " + it.toStr].random, ["BEng", "MEng", "MSc"].random, "Project" + it.toStr) }
 		supList := (1..10).map { Supervisor(it, "Prof" + it.toStr, ["E", "I"].random, ["E", "I"].random + (10..20).random.toStr, (1..5).random) }
 		prefList := (1..stdList.size).map { Preference(stdList.getSafe(it), projList.getSafe(it), "Comment" + it.toStr, (1..projList.size).random.toFloat) }
-		rank := Student:Project[:]
+		rank := Student:[Project:Float][:]
 		stdList.shuffle
 		projList.shuffle
 		//prefList.sort |Student:Project sp| { rank.  }
@@ -37,7 +37,7 @@ class Statistics
         •	Order selections of each student, trim to < 10, if < 4 select extra lower ranked projects from selected supervisors if possible up to 4.
 	*/
 	
-	static Void MC(Student[] students, Project[] projects, Supervisor[] supervisors, Student:Project rank)
+	static Void MC(Student[] students, Project[] projects, Supervisor[] supervisors, Student:[Project:Float] rank)
 	{
 		//look at each student in a random order
 		//allocate student, highest ranked remaining project
