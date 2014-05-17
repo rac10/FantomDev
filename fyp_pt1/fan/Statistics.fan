@@ -3,30 +3,33 @@ class Statistics
 {
 	static Void main()
 	{
-		stdList := (1..15).map { Student (it, "Stud" + it.toStr, 2050-it, "stud"+ (08..14).random.toStr) }
+		stdList := (1..5).map { Student (it, "Stud" + it.toStr, 2050-it, "stud"+ (08..14).random.toStr) }
 		projList := (1..10).map { Project(it, it, "Prof" + (1..10).random.toStr, [null, "Dr " + it.toStr].random, ["BEng", "MEng", "MSc"].random, "Project" + it.toStr) }
 		supList := (1..10).map { Supervisor(it, "Prof" + it.toStr, ["E", "I"].random, ["E", "I"].random + (10..20).random.toStr, (1..5).random) }
-		prefList := (1..stdList.size).map { Preference(stdList.getSafe(it), projList.getSafe(it), "Comment" + it.toStr, (1..projList.size).random.toFloat) }
+		//prefList := (1..stdList.size).map { Preference(stdList.getSafe(it), projList.getSafe(it), "Comment" + it.toStr, (1..projList.size).random.toFloat) }
 		rank := Student:[Project:Float][:]
 		stdList.shuffle
 		projList.shuffle
-		//prefList.sort |Student:Project sp| { rank.  }
-		stdList.each |s, i|
-		{ 
+		stdList.each |s|
+		{    			
 			try
 			{
-				//assign normally
-    			if(projList.getSafe(i) != null)
-    				rank[s] = projList[i]
-    			else //if no more projects available, randomly assign project to student
-    				rank[s] = projList.random
+				projList.each |p, j| 
+        		{
+    				value := (1..projList.size).random.toFloat
+        			if(rank[s] != null) 
+        				rank[s].addAll([projList[j]:value]) 
+        			else rank[s] = [p:value]
+        		}
 			}
 			catch(Err e)
 			{
 				echo(e.msg)
 			}
+			
 		}
-		MC(stdList, projList, supList, rank)
+		rank.each |r, i| { echo(i.toStr + " " +  r.toStr)  }
+		//MC(stdList, projList, supList, rank)
 	}
 	
 	/*	•	You can use random numbers to generate simulated preferences as follows:
@@ -57,14 +60,13 @@ class Statistics
 		//randomise the students and projects list
 		projects.shuffle
 		students.shuffle
-		//populate assigned projects
+		//initial project allocation
 		projects.each |p, i| 
 		{ 
 			//populate projAssign
-			//if null then randomly choose student
 			try
 			{
-    			if(students.getSafe(i) != null)
+    			if(students.getSafe(i) != null && (0..100).random.toFloat <= pP*100 && (0..100).random.toFloat <= pS*100)
 				{
     				projAssign[p] = students[i]
     				projAssigned[p] = true
@@ -81,6 +83,17 @@ class Statistics
 			}	
 		} 
 		//projAssign.each |s, p| { if(projAssign[p] == null) break }
+		rank.each |p, s| { rank.get(s)  }
+		/*
+		projAssigned.each |b, p|
+		{ 
+			if(!projAssigned[p])  
+				rank.each |s|
+				{ 
+					projAssign   
+					
+				}
+		}*/
 		//initialisation
 		supervisors.each { projAlloc.getOrAdd(it) { 0 }}
 		//for each supervisor

@@ -130,7 +130,7 @@ const class Student
 	override Str toStr()
 	{
 		//used for debugging
-		return (this.sid.toStr + " " + this.name + " " + this.email)
+		return (this.sid.toStr + " " + this.name)
 	}
     const Int sid
     const Str? name
