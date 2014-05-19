@@ -8,7 +8,7 @@ class Statistics
 		projList := (1..5).map { Project(it, it, "Prof" + (1..10).random.toStr, [null, "Dr " + it.toStr].random, ["BEng", "MEng", "MSc"].random, "Project" + it.toStr) }
 		supList := (1..5).map { Supervisor(it, "Prof" + it.toStr, ["E", "I"].random, ["E", "I"].random + (10..20).random.toStr, (1..5).random) }
 		//prefList := (1..stdList.size).map { Preference(stdList.getSafe(it), projList.getSafe(it), "Comment" + it.toStr, (1..projList.size).random.toFloat) }
-		rank := Student:[Project:Float][:]
+		rank := Student:[Project:Int][:]
 		stdList.shuffle
 		projList.shuffle
 		//randomly assigns a value to each student:project to indicate rank
@@ -19,7 +19,7 @@ class Statistics
 			try
 			{
 				rank[s] = [:]
-				projList.each { rank[s][it] = (1..10).random.toFloat }
+				projList.each { rank[s][it] = (1..10).random }
 			}
 			catch(Err e)
 			{
@@ -31,7 +31,7 @@ class Statistics
 		echo(hi)
 	}
 	
-	static Student:Project MC(Student[] students, Project[] projects, Supervisor[] supervisors, Student:[Project:Float] rank)
+	static Project:Student MC(Student[] students, Project[] projects, Supervisor[] supervisors, Student:[Project:Int] rank)
 	{
 		//look at each student in a random order
 		//allocate student, highest ranked remaining project
@@ -42,12 +42,14 @@ class Statistics
 		//the map of the assigned projects
 		projAssign := Project:Student[:]
 		projAssigned := Project:Bool[:]
-		studAssign := Student:Project[:]
 		studAssigned := Student:Bool[:]
 		//counts how many projects has been allocated
 		projAlloc := Supervisor:Int[:]
 		//need an array of float to determine minimum
-		rankMin := Student:Float[:]
+		rankMin := Student:Int[:]
+		//need a map of rank:list of projects
+		rankProj := Int:Project[][:]
+		
 		//randomise the students and projects list
 		projects.shuffle
 		students.shuffle
@@ -55,8 +57,54 @@ class Statistics
 		//create a set that is non-empty and non-null
 		projects.each { projAssigned[it] = false }
 		students.each { studAssigned[it] = false }
+
+		//initialise rankProj
+		(1..10).each { rankProj[it] = [,] }
 		
-		echo(students)
+		students.each |s, i|
+		{    			
+			try
+			{
+				
+				projects.each 
+				{
+					r := rank[s][it]
+					rankProj[r].add(it)
+				}
+				echo(rankProj)
+				
+				//do the new assignment here. not done yet.
+				//need to use rankProj to determine the project assignments
+				projects.each |p|
+    			{
+    				try
+    				{
+    					//find best allocation that is unassigned for both projects and students
+    					if(rankMin[s] >= rank[s][p] && !studAssigned[s] && !projAssigned[p])
+    					{
+    						projAssign[p] = s
+    						projAssigned[p] = true
+    						studAssigned[s] = true
+    					}
+    					//removes already assigned projects
+    					if(projAssigned[p]) {students.each  { rank[it].remove(p)} }
+    				}
+    				catch(Err e)
+    				{
+    					echo(e.msg)
+    				}	
+    			}
+				//clear rankProj. using clear removes all pointers; don't do that
+				(1..10).each { rankProj[it] = [,] }
+			}
+			catch(Err e)
+			{
+				echo(e.msg)
+			}	
+		}
+
+		/*
+		//echo(students)
 		//initial project allocation
 		students.each |s| 
 		{   
@@ -70,7 +118,6 @@ class Statistics
 					if(rankMin[s] >= rank[s][p] && !studAssigned[s] && !projAssigned[p])
 					{
 						projAssign[p] = s
-						studAssign[s] = p
 						projAssigned[p] = true
 						studAssigned[s] = true
 					}
@@ -83,33 +130,12 @@ class Statistics
 				}	
 			}
 		}
-		echo(projAssign)
+		*/
+		//echo(projAssign)
 		//echo(studAssigned)
 		//echo(projAssigned)
-		/*
-		projects.each |p| 
-		{ 
-			//populate projAssign
-			try
-			{
-				students.each |s, j| 
-				{   
-					echo(rank[s])
-					if(rank[s][p] == rankMin[j] && !projAssigned[p])
-					{
-						projAssign[p] = s
-        				projAssigned[p] = true
-					}
-					//else projAssigned[p] = false
-				}
-			}
-			catch(Err e)
-			{
-				echo(e.msg)
-			}	
-		} 
+
 		
-		*/
 		//projAssign.each |s, p| { if(projAssign[p] == null) break }
 		
 		/*
@@ -153,16 +179,16 @@ class Statistics
 		//	projAssign.add([p.random:s.random])
 		}*/
 		//echo(projects)
-		return studAssign
+		return projAssign
 	}
 	
-	static Student:Float findMin(Student:[Project:Float] rank)
+	static Student:Int findMin(Student:[Project:Int] rank)
 	{
-		tmp := Student:Float[:]
+		tmp := Student:Int[:]
 		//find minimum rank of each student
 		rank.each |pf, s| 
 		{   
-			rankVals := Float[,]
+			rankVals := Int[,]
 			pf.each |f, p| 
 			{   
 				rankVals.add(f)
