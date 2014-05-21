@@ -28,7 +28,7 @@ class Statistics
 		}
 		rank.each |r, i| { echo(i.toStr + " " +  r)  }
 		hi := MC(stdList, projList, supList, rank)
-		echo(hi)
+		//echo(hi)
 	}
 	
 	static Project:Student MC(Student[] students, Project[] projects, Supervisor[] supervisors, Student:[Project:Int] rank)
@@ -57,6 +57,8 @@ class Statistics
 		//create a set that is non-empty and non-null
 		projects.each { projAssigned[it] = false }
 		students.each { studAssigned[it] = false }
+		echo(projects)
+		echo(students)
 
 		//initialise rankProj
 		(1..10).each { rankProj[it] = [,] }
@@ -71,29 +73,17 @@ class Statistics
 					r := rank[s][it]
 					rankProj[r].add(it)
 				}
-				echo(rankProj)
 				
 				//do the new assignment here. not done yet.
 				//need to use rankProj to determine the project assignments
-				projects.each |p|
-    			{
-    				try
-    				{
-    					//find best allocation that is unassigned for both projects and students
-    					if(rankMin[s] >= rank[s][p] && !studAssigned[s] && !projAssigned[p])
-    					{
-    						projAssign[p] = s
-    						projAssigned[p] = true
-    						studAssigned[s] = true
-    					}
-    					//removes already assigned projects
-    					if(projAssigned[p]) {students.each  { rank[it].remove(p)} }
-    				}
-    				catch(Err e)
-    				{
-    					echo(e.msg)
-    				}	
-    			}
+				p := rankProj.eachWhile |x| { x.random }
+				projAssign[p] = s
+				projAssigned[p] = true
+				studAssigned[s] = true
+				
+				students.each  { rank[it].remove(p) }
+				projects.remove(p)
+				
 				//clear rankProj. using clear removes all pointers; don't do that
 				(1..10).each { rankProj[it] = [,] }
 			}
@@ -102,7 +92,7 @@ class Statistics
 				echo(e.msg)
 			}	
 		}
-
+		echo(projAssign)
 		/*
 		//echo(students)
 		//initial project allocation
