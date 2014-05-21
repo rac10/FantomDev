@@ -2,11 +2,11 @@
 ** Deals with the MC allocation
 class Statistics
 {
-	static Void main()
+	static Void main(Str[] args)
 	{
-		stdList := (1..5).map { Student (it, "Stud" + it.toStr, 2050-it, "stud"+ (08..14).random.toStr) }
-		projList := (1..5).map { Project(it, it, "Prof" + (1..10).random.toStr, [null, "Dr " + it.toStr].random, ["BEng", "MEng", "MSc"].random, "Project" + it.toStr) }
-		supList := (1..5).map { Supervisor(it, "Prof" + it.toStr, ["E", "I"].random, ["E", "I"].random + (10..20).random.toStr, (1..5).random) }
+		stdList := (1..args[0].toInt).map { Student (it, "Stud" + it.toStr, 2050-it, "stud"+ (08..14).random.toStr) }
+		projList := (1..args[1].toInt).map { Project(it, it, "Prof" + (1..10).random.toStr, [null, "Dr " + it.toStr].random, ["BEng", "MEng", "MSc"].random, "Project" + it.toStr) }
+		supList := (1..args[2].toInt).map { Supervisor(it, "Prof" + it.toStr, ["E", "I"].random, ["E", "I"].random + (10..20).random.toStr, (1..5).random) }
 		//prefList := (1..stdList.size).map { Preference(stdList.getSafe(it), projList.getSafe(it), "Comment" + it.toStr, (1..projList.size).random.toFloat) }
 		rank := Student:[Project:Int][:]
 		stdList.shuffle
@@ -27,11 +27,12 @@ class Statistics
 			}	
 		}
 		rank.each |r, i| { echo(i.toStr + " " +  r)  }
-		hi := MC(stdList, projList, supList, rank)
+		hi := MC(stdList, projList, rank)
+		countSup(supList, projList)
 		//echo(hi)
 	}
 	
-	static Project:Student MC(Student[] students, Project[] projects, Supervisor[] supervisors, Student:[Project:Int] rank)
+	static Project:Student MC(Student[] students, Project[] projects, Student:[Project:Int] rank)
 	{
 		//look at each student in a random order
 		//allocate student, highest ranked remaining project
@@ -43,8 +44,7 @@ class Statistics
 		projAssign := Project:Student[:]
 		projAssigned := Project:Bool[:]
 		studAssigned := Student:Bool[:]
-		//counts how many projects has been allocated
-		projAlloc := Supervisor:Int[:]
+		
 		//need an array of float to determine minimum
 		rankMin := Student:Int[:]
 		//need a map of rank:list of projects
@@ -125,41 +125,8 @@ class Statistics
 		//echo(studAssigned)
 		//echo(projAssigned)
 
-		
-		//projAssign.each |s, p| { if(projAssign[p] == null) break }
-		
 		/*
-		projAssigned.each |b, p|
-		{ 
-			if(!projAssigned[p])  
-				rank.each |s|
-				{ 
-					projAssign   
-					
-				}
-		}*/
-		/*
-		//initialisation
-		supervisors.each { projAlloc.getOrAdd(it) { 0 }}
-		//for each supervisor
-		//count how many times each supervisor has been allocated a project
-		//only counts mandatory supervisor
-		projAlloc.each |i, s|
-		{ 
-			projects.each 
-			{ 
-				if(s.name == it.sup1)
-					projAlloc[s]++
-			}
-			if(projAlloc[s] > s.max)
-			{
-				echo("Max limit of " + s.max + " for " + s.name + " surpassed. Currently assigned " + projAlloc[s] + " projects. Resetting to infinity..")
-				projAlloc[s] = 999
-			}
-			else echo("No problems for " + s.name + " with " + s.max + " limit but currently has " + projAlloc[s] + " projects")
-		}
-		//projects.each { echo(it.sup1 + " " + it.sup2)  }
-		projAlloc.each |i, s| { echo(s.toStr + " with count " + projAlloc[s])  }
+		
 		*/
 		//need to initialise p if it does not exist
 		/*
@@ -187,5 +154,32 @@ class Statistics
 
 		}
 		return tmp
+	}
+	
+	static Void countSup(Supervisor[] supervisors, Project[] projects)
+	{
+		//counts how many projects has been allocated
+		projAlloc := Supervisor:Int[:]
+		//initialisation
+		supervisors.each { projAlloc.getOrAdd(it) { 0 }}
+		//for each supervisor
+		//count how many times each supervisor has been allocated a project
+		//only counts mandatory supervisor
+		projAlloc.each |i, s|
+		{ 
+			projects.each 
+			{ 
+				if(s.name == it.sup1)
+					projAlloc[s]++
+			}
+			if(projAlloc[s] > s.max)
+			{
+				echo("Max limit of " + s.max + " for " + s.name + " surpassed. Currently assigned " + projAlloc[s] + " projects. Resetting to infinity..")
+				projAlloc[s] = 999
+			}
+			else echo("No problems for " + s.name + " with " + s.max + " limit but currently has " + projAlloc[s] + " projects")
+		}
+		//projects.each { echo(it.sup1 + " " + it.sup2)  }
+		projAlloc.each |i, s| { echo(s.toStr + " with count " + projAlloc[s])  }
 	}
 }
