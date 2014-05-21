@@ -30,7 +30,7 @@ class Statistics
 		//hi := MC(stdList, projList, rank)
 		//countSup(supList, projList)
 		haiworld := MCNtimes(stdList, projList, rank, 3)
-		echo(haiworld)
+		haiworld.each { echo(it) }
 	}
 	
 	static Project:Student MC(Student[] students, Project[] projects, Student:[Project:Int] rank)
@@ -55,9 +55,10 @@ class Statistics
 		rankProj := Int:Project[][:]
 		
 		//temp vars
-		rankTmp := rank
-		projTmp := projects
-		studTmp := students
+		rankTmp :=  Student:[Project:Int][:]
+		rank.each |pi, s| { rankTmp[s] = [:]; pi.each |i, p| { rankTmp[s][p] = i }  }
+		projTmp := projects.map { it }
+		studTmp := students.map { it }
 		
 		//randomise the students and projects list
 		projTmp.shuffle
@@ -116,10 +117,9 @@ class Statistics
 		
 		(1..N).each |n|
 		{
-			echo(rank)
 			projAssign[n] = [:]
 			tmp := MC(studImm, projImm, rankImm)
-			tmp.each |s, p| { projAssign[n][p] = s }
+			tmp.each |s, p| { projAssign[n].add(p, s) }
 		}
 		return projAssign
 	}
