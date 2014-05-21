@@ -26,14 +26,20 @@ class Statistics
 				echo(e.msg)
 			}	
 		}
-		rank.each |r, i| { echo(i.toStr + " " +  r)  }
-		hi := MC(stdList, projList, rank)
-		countSup(supList, projList)
-		//echo(hi)
+		//rank.each |r, i| { echo(i.toStr + " " +  r)  }
+		//hi := MC(stdList, projList, rank)
+		//countSup(supList, projList)
+		haiworld := MCNtimes(stdList, projList, rank, 3)
+		echo(haiworld)
 	}
 	
 	static Project:Student MC(Student[] students, Project[] projects, Student:[Project:Int] rank)
 	{
+		/** Performs Monte-Carlo simulation
+		* * Allocates randomly. Allocation is not guaranteed for all students
+		* * 
+		* * 
+		*  */
 		//look at each student in a random order
 		//allocate student, highest ranked remaining project
 		//after all students have been considered, the final allocation is remembered.
@@ -44,45 +50,49 @@ class Statistics
 		projAssign := Project:Student[:]
 		projAssigned := Project:Bool[:]
 		studAssigned := Student:Bool[:]
-		
-		//need an array of float to determine minimum
-		rankMin := Student:Int[:]
+
 		//need a map of rank:list of projects
 		rankProj := Int:Project[][:]
 		
+		//temp vars
+		rankTmp := rank
+		projTmp := projects
+		studTmp := students
+		
 		//randomise the students and projects list
-		projects.shuffle
-		students.shuffle
+		projTmp.shuffle
+		studTmp.shuffle
 
 		//create a set that is non-empty and non-null
-		projects.each { projAssigned[it] = false }
-		students.each { studAssigned[it] = false }
-		echo(projects)
-		echo(students)
+		projTmp.each { projAssigned[it] = false }
+		studTmp.each { studAssigned[it] = false }
+		//echo(projects)
+		//echo(students)
 
 		//initialise rankProj
 		(1..10).each { rankProj[it] = [,] }
 		
-		students.each |s, i|
+		//initial project allocation
+		studTmp.each |s, i|
 		{    			
 			try
 			{
 				
-				projects.each 
+				projTmp.each 
 				{
-					r := rank[s][it]
+					r := rankTmp[s][it]
 					rankProj[r].add(it)
 				}
 				
-				//do the new assignment here. not done yet.
-				//need to use rankProj to determine the project assignments
-				p := rankProj.eachWhile |x| { x.random }
+
+				//use rankProj to determine the project assignments
+				p := rankProj.eachWhile |proj| { proj.random }
 				projAssign[p] = s
 				projAssigned[p] = true
 				studAssigned[s] = true
 				
-				students.each  { rank[it].remove(p) }
-				projects.remove(p)
+				studTmp.each  { rankTmp[it].remove(p) }
+				projTmp.remove(p)
 				
 				//clear rankProj. using clear removes all pointers; don't do that
 				(1..10).each { rankProj[it] = [,] }
@@ -92,50 +102,25 @@ class Statistics
 				echo(e.msg)
 			}	
 		}
-		echo(projAssign)
-		/*
-		//echo(students)
-		//initial project allocation
-		students.each |s| 
-		{   
-			rankMin = findMin(rank)
-			//initial project allocation
-			projects.each |p|
-			{
-				try
-				{
-					//find best allocation that is unassigned for both projects and students
-					if(rankMin[s] >= rank[s][p] && !studAssigned[s] && !projAssigned[p])
-					{
-						projAssign[p] = s
-						projAssigned[p] = true
-						studAssigned[s] = true
-					}
-					//removes already assigned projects
-					if(projAssigned[p]) {students.each  { rank[it].remove(p)} }
-				}
-				catch(Err e)
-				{
-					echo(e.msg)
-				}	
-			}
-		}
-		*/
 		//echo(projAssign)
-		//echo(studAssigned)
-		//echo(projAssigned)
 
-		/*
+		return projAssign
+	}
+	
+	static Int:[Project:Student] MCNtimes(Student[] students, Project[] projects, Student:[Project:Int] rank, Int N)
+	{
+		projAssign := Int:[Project:Student][:]
+		studImm := students
+		projImm := projects
+		rankImm := rank
 		
-		*/
-		//need to initialise p if it does not exist
-		/*
-		if(projects.getSafe(50) == null)
+		(1..N).each |n|
 		{
-			projAssign[projects.random] = students.random
-		//	projAssign.add([p.random:s.random])
-		}*/
-		//echo(projects)
+			echo(rank)
+			projAssign[n] = [:]
+			tmp := MC(studImm, projImm, rankImm)
+			tmp.each |s, p| { projAssign[n][p] = s }
+		}
 		return projAssign
 	}
 	
