@@ -6,7 +6,7 @@ class Build : build::BuildPod
     	podName = "concurrencytest"
     	summary = ""
     	srcDirs = [`fan/`]
-    	depends = ["sys 1.0", "concurrent 1.0", "fwt 1.0", "gfx 1.0"]
+    	depends = ["sys 1.0", "concurrent 1.0+", "fwt 1.0+", "gfx 1.0+"]
     }
 	
 	@Target{help = "Delete target and recompile"}
@@ -15,4 +15,5 @@ class Build : build::BuildPod
 		outPodDir.plusName("${podName}.pod").toFile.delete
 		super.compile
 	}
+	
 }

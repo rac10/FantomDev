@@ -1,6 +1,9 @@
+using concurrent
+
 ** Statistics.fan
 ** Deals with the MC allocation
-class Statistics
+** 
+const class Statistics
 {
 	static Void main(Str[] args)
 	{
@@ -11,6 +14,7 @@ class Statistics
 		rank := Student:[Project:Int][:]
 		stdList.shuffle
 		projList.shuffle
+		
 		//randomly assigns a value to each student:project to indicate rank
 		//low rank(1) indicates high preference
 		//high rank(10) indicates low preference
@@ -29,24 +33,15 @@ class Statistics
 		//rank.each |r, i| { echo(i.toStr + " " +  r)  }
 		//hi := MC(stdList, projList, rank)
 		//countSup(supList, projList)
-		haiworld := MCNtimes(stdList, projList, rank, 3)
-		haiworld.each { echo(it) }
+		haiworld := MCNtimes(stdList, projList, rank, 6)
+		haiworld.each |r, i| { echo(i.toStr + ": " + r) }
 	}
 	
 	static Project:Student MC(Student[] students, Project[] projects, Student:[Project:Int] rank)
 	{
 		/** Performs Monte-Carlo simulation
 		* * Allocates randomly. Allocation is not guaranteed for all students
-		* * 
-		* * 
 		*  */
-		//look at each student in a random order
-		//allocate student, highest ranked remaining project
-		//after all students have been considered, the final allocation is remembered.
-		//simulated allocation is repeated many times using random shuffles of student order & allocation stats are collected
-		//need Project:Student map
-		//need Supervisor:Int map and count how many projects have been allocated to each supervisor
-		//the map of the assigned projects
 		projAssign := Project:Student[:]
 		projAssigned := Project:Bool[:]
 		studAssigned := Student:Bool[:]
@@ -78,25 +73,29 @@ class Statistics
 		{    			
 			try
 			{
+				allAssigned := projAssigned.all { it == true }
 				
-				projTmp.each 
+				if(!allAssigned)
 				{
-					r := rankTmp[s][it]
-					rankProj[r].add(it)
+    				projTmp.each 
+    				{
+    					r := rankTmp[s][it]
+    					rankProj[r].add(it)
+    				}
+    				//if all students already assigned, need to deal with unassigned students
+    				//use rankProj to determine the project assignments
+    				p := rankProj.eachWhile |proj| { proj.random }
+    				projAssign[p] = s
+    				projAssigned[p] = true
+    				studAssigned[s] = true
+    				
+    				studTmp.each  { rankTmp[it].remove(p) }
+    				projTmp.remove(p)
+    				
+    				//clear rankProj. using .clear removes all pointers; don't do that
+    				(1..10).each { rankProj[it] = [,] }
+    				
 				}
-				
-
-				//use rankProj to determine the project assignments
-				p := rankProj.eachWhile |proj| { proj.random }
-				projAssign[p] = s
-				projAssigned[p] = true
-				studAssigned[s] = true
-				
-				studTmp.each  { rankTmp[it].remove(p) }
-				projTmp.remove(p)
-				
-				//clear rankProj. using clear removes all pointers; don't do that
-				(1..10).each { rankProj[it] = [,] }
 			}
 			catch(Err e)
 			{
@@ -111,16 +110,64 @@ class Statistics
 	static Int:[Project:Student] MCNtimes(Student[] students, Project[] projects, Student:[Project:Int] rank, Int N)
 	{
 		projAssign := Int:[Project:Student][:]
-		studImm := students
-		projImm := projects
-		rankImm := rank
 		
+		/* Any info from an actor should be sent as a message to another actor.
+		A "result" actor can store stuff in its actor.locals
+		(which can contain a Map etc) and read out stored data at the end.
+		It can be polled for the end point.
+
+		The work you do is the receive function of the Actor.
+		This would do one - or more than one - MC alloc and return the
+		allocations. The receive function can therefore have no parameters.
+		For efficiency the allocations should be immutable.
+
+		You need to have multiple actor instances (at least one per hardware
+		thread) to make use of concurrent execution.
+
+		In your case you can do what the primes example does and 
+		get data back from futures of the actors.
+		*/
+		
+		aPool := ActorPool { maxThreads = 4 }
+		//watev := Project:Student[:]
+		actor := [Int:Actor][:]
+		future := [Int:Future][:]
+		
+		echo("Creating actors...")
+		for(i := 1; i <= N; i++)
+		{
+			actor[i] = Actor(aPool, |->Project:Student| { MC(students, projects, rank) })
+		}
+		t1 := Duration.nowTicks
+		actor.each|a, i| { future[i] = a.send(i) }
+		//actors work, but..how the fuck do i read them
+		//actor.each { it.receive("asd") }
+		aPool.stop
+		num := 0
+		while (!aPool.isDone )
+		{
+			//num = 0
+			//future.each {if(it.isDone)num++ }
+			//echo("$num actors finished")
+			try
+				aPool.join(Duration.fromStr("0.5sec"))
+			catch (TimeoutErr e) {}
+		}
+		
+		elapsedMs := (Duration.nowTicks - t1)/1000000
+		num = 0
+		
+		echo("Finished in ${elapsedMs}ms using 4 threads ")
+		echo("$num found")
+		
+		/*
 		(1..N).each |n|
 		{
 			projAssign[n] = [:]
-			tmp := MC(studImm, projImm, rankImm)
+			tmp := MC(students, projects, rank)
 			tmp.each |s, p| { projAssign[n].add(p, s) }
 		}
+		*/
 		return projAssign
 	}
 	
@@ -144,12 +191,10 @@ class Statistics
 	static Void countSup(Supervisor[] supervisors, Project[] projects)
 	{
 		//counts how many projects has been allocated
-		projAlloc := Supervisor:Int[:]
-		//initialisation
-		supervisors.each { projAlloc.getOrAdd(it) { 0 }}
-		//for each supervisor
-		//count how many times each supervisor has been allocated a project
 		//only counts mandatory supervisor
+		projAlloc := Supervisor:Int[:]
+		supervisors.each { projAlloc.getOrAdd(it) { 0 }}
+		
 		projAlloc.each |i, s|
 		{ 
 			projects.each 
