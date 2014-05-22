@@ -128,7 +128,7 @@ const class Statistics
 		get data back from futures of the actors.
 		*/
 		
-		aPool := ActorPool { maxThreads = 4 }
+		aPool := ActorPool { maxThreads = N }
 		//watev := Project:Student[:]
 		actor := [Int:Actor][:]
 		future := [Int:Future][:]
@@ -146,19 +146,14 @@ const class Statistics
 		num := 0
 		while (!aPool.isDone )
 		{
-			//num = 0
-			//future.each {if(it.isDone)num++ }
-			//echo("$num actors finished")
 			try
 				aPool.join(Duration.fromStr("0.5sec"))
 			catch (TimeoutErr e) {}
 		}
 		
 		elapsedMs := (Duration.nowTicks - t1)/1000000
-		num = 0
 		
-		echo("Finished in ${elapsedMs}ms using 4 threads ")
-		echo("$num found")
+		echo("Finished in ${elapsedMs}ms using $N threads ")
 		
 		/*
 		(1..N).each |n|
