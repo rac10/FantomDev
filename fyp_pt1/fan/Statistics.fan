@@ -3,7 +3,7 @@ using concurrent
 ** Statistics.fan
 ** Deals with the MC allocation
 ** 
-const class Statistics
+class Statistics
 {
 	/*
 	static const Str msg := ""
@@ -45,6 +45,8 @@ const class Statistics
 				echo(e.msg)
 			}	
 		}
+		
+		
 		//rank.each |r, i| { echo(i.toStr + " " +  r)  }
 		//hi := MC(stdList, projList, rank)
 		//countSup(supList, projList)
@@ -73,11 +75,23 @@ const class Statistics
 		get data back from futures of the actors.
 		*/
 		
+		/*
+		//? i'm not sure if this is concurrent LOL
+		for(i := 0; i < N; i++)
+		{
+			Actor.locals["project"] = projAssign[i] = MC(students, projects, rank)
+				
+		}
+		echo(Actor.locals)	
+		*/
+		
+		//asynchronised concurrency
+		/*
 		aPool := ActorPool { maxThreads = N }
 		aReply := Actor (aPool, |Obj o->Obj?| {printFunc(o)})
-		aProj := Actor(aPool, |->| {findProjs(students, projects, rank, N, aReply)})
-		aProj.send(projAssign)
-		
+		aProj := Actor(aPool, |->|{findProjs(students, projects, rank, N, aReply)})
+		aProj.send("project") //start async
+
 		i := 0
 		while(i < N)
 		{
@@ -85,8 +99,27 @@ const class Statistics
 			Env.cur.out.writeChars("$s")
 			if(s.toStr.size > 0) i++
 		}
+		*/
+		
 		
 		/*
+		//some example from the net..
+		pool := ActorPool()
+        a := Actor(pool) |->Project:Student|
+        {
+            data := MC(students, projects, rank)
+			echo(data)
+            Actor.locals["asd"] = data
+			echo(Actor.locals["asd"])
+            return data
+        }
+         
+        echo("Project is now " +  a.send("").get + " " + a.send(null).get )
+		*/
+		
+		 
+		//synchronised concurrency
+		aPool := ActorPool { maxThreads = N }
 		actor := [Int:Actor][:]
 		future := [Int:Future][:]
 		
@@ -98,21 +131,27 @@ const class Statistics
 		t1 := Duration.nowTicks
 		actor.each|a, i| { future[i] = a.send(i) }
 		//actors work, but..how the fuck do i read them
-		//actor.each { it.receive(msg) }
-
+		
+		
 		aPool.stop
+		
+		
+		
 		num := 0
 		while (!aPool.isDone )
 		{
 			try
-				aPool.join(Duration.fromStr("0.5sec"))
+				aPool.join(Duration.fromStr("0.1sec"))
 			catch (TimeoutErr e) {}
 		}
 		
 		elapsedMs := (Duration.nowTicks - t1)/1000000
+		actor.each { echo(it.toStr) }
+		future.each |f, i| { echo(f.get)  }
+		//echo(act.)
+		echo("Finished in ${elapsedMs}ms using $N threads")
 		
-		echo("Finished in ${elapsedMs}ms using $N threads ")
-		*/
+		
 		/*
 		(1..N).each |n|
 		{
@@ -126,7 +165,7 @@ const class Statistics
 	
 	static Str? printFunc (Obj s)
 	{
-		h := Actor.locals.get("printFuncState","") as Str
+		h := Actor.locals.get("printFuncState","").toStr
 		if (s is Project:Student)
 		{
 			Actor.locals["printFuncState"] = "$h$s.toStr\n"
@@ -215,8 +254,6 @@ const class Statistics
 				echo(e.msg)
 			}	
 		}
-		//echo(projAssign)
-
 		return projAssign
 	}
 	
