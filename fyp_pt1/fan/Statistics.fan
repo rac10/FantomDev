@@ -3,23 +3,8 @@ using concurrent
 ** Statistics.fan
 ** Deals with the MC allocation
 ** 
-class Statistics
-{
-	/*
-	static const Str msg := ""
-	const Str handle := Uuid().toStr
-	new make(Project:Student ps) : super(ActorPool()) 
-	{
-		Actor.locals[handle] = ps
-		echo(ps)
-		sendLater(1sec, msg)
-	}
-	
-	override Obj? receive(Obj? msg)
-	{
-		return msg
-	}
-	*/
+const class Statistics
+{	
 	static Void main(Str[] args)
 	{
 		stdList := (1..args[0].toInt).map { Student (it, "Stud" + it.toStr, 2050-it, "stud"+ (08..14).random.toStr) }
@@ -85,17 +70,27 @@ class Statistics
 		echo(Actor.locals)	
 		*/
 		
-		//asynchronised concurrency
 		/*
-		aPool := ActorPool { maxThreads = N }
-		aReply := Actor (aPool, |Obj o->Obj?| {printFunc(o)})
+		//asynchronised concurrency
+		(1..N).each { projAssign[it] = [:] }
+		aPool := ActorPool { maxThreads = 2 }
+		aReply := Actor(aPool, |Obj o->Obj?| {printFunc(o)})
 		aProj := Actor(aPool, |->|{findProjs(students, projects, rank, N, aReply)})
-		aProj.send("project") //start async
+		projAssign[0] = MC(students, projects, rank)
+		aProj.send(projAssign[1].toImmutable) //start async
 
+		
+
+		while(!aPool.isDone)
+		{
+			echo("waiting..")
+		}
+		echo("Done!")
+		
 		i := 0
 		while(i < N)
 		{
-			s := aReply.sendLater (Duration.fromStr("0.1sec"),"").get
+			s := aReply.sendLater (0.1sec,"").get
 			Env.cur.out.writeChars("$s")
 			if(s.toStr.size > 0) i++
 		}
@@ -108,16 +103,19 @@ class Statistics
         a := Actor(pool) |->Project:Student|
         {
             data := MC(students, projects, rank)
-			echo(data)
-            Actor.locals["asd"] = data
-			echo(Actor.locals["asd"])
+			//echo(data)
+            Actor.locals["proj"] = data
+			echo(Actor.locals["proj"])
             return data
         }
-         
-        echo("Project is now " +  a.send("").get + " " + a.send(null).get )
+           
+
+        
+		N.times { a.send(null) }
+        echo("Project is now " +  a.send("proj").get.toStr)
 		*/
 		
-		 
+		
 		//synchronised concurrency
 		aPool := ActorPool { maxThreads = N }
 		actor := [Int:Actor][:]
@@ -126,17 +124,12 @@ class Statistics
 		echo("Creating actors...")
 		for(i := 1; i <= N; i++)
 		{
-			actor[i] = Actor(aPool, |->Project:Student| { MC(students, projects, rank) })
+			actor[i] = Actor(aPool, |->Project:Student| { MC(students, projects, rank).toImmutable })
 		}
 		t1 := Duration.nowTicks
-		actor.each|a, i| { future[i] = a.send(i) }
-		//actors work, but..how the fuck do i read them
-		
+		actor.each|a, i| { future[i] = a.send(i) }	
 		
 		aPool.stop
-		
-		
-		
 		num := 0
 		while (!aPool.isDone )
 		{
@@ -146,18 +139,14 @@ class Statistics
 		}
 		
 		elapsedMs := (Duration.nowTicks - t1)/1000000
-		actor.each { echo(it.toStr) }
-		future.each |f, i| { echo(f.get)  }
-		//echo(act.)
+		future.each |f, i| { projAssign[i] = f.get }
 		echo("Finished in ${elapsedMs}ms using $N threads")
 		
 		
 		/*
 		(1..N).each |n|
 		{
-			projAssign[n] = [:]
-			tmp := MC(students, projects, rank)
-			tmp.each |s, p| { projAssign[n].add(p, s) }
+			projAssign[n] = MC(students, projects, rank)
 		}
 		*/
 		return projAssign
@@ -181,12 +170,17 @@ class Statistics
 	
 	static Void findProjs (Student[] students, Project[] projects, Student:[Project:Int] rank, Int max, Actor printFuncActor)
 	{
-		temp := Project:Student[:]
+		i := 1
+		while(i != max)
+		{
+			printFuncActor.send(MC(students, projects, rank).toImmutable)
+			i++
+		}
+		/*
 		for (i := 1; i <= max; i++)
 		{
-			temp = MC(students, projects, rank)
-			printFuncActor.send(temp)
-		}
+			printFuncActor.send(MC(students, projects, rank))
+		}*/
 	}
 	
 	static Project:Student MC(Student[] students, Project[] projects, Student:[Project:Int] rank)
