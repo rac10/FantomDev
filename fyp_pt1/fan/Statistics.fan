@@ -5,6 +5,21 @@ using concurrent
 ** 
 const class Statistics
 {
+	/*
+	static const Str msg := ""
+	const Str handle := Uuid().toStr
+	new make(Project:Student ps) : super(ActorPool()) 
+	{
+		Actor.locals[handle] = ps
+		echo(ps)
+		sendLater(1sec, msg)
+	}
+	
+	override Obj? receive(Obj? msg)
+	{
+		return msg
+	}
+	*/
 	static Void main(Str[] args)
 	{
 		stdList := (1..args[0].toInt).map { Student (it, "Stud" + it.toStr, 2050-it, "stud"+ (08..14).random.toStr) }
@@ -35,6 +50,104 @@ const class Statistics
 		//countSup(supList, projList)
 		haiworld := MCNtimes(stdList, projList, rank, 6)
 		haiworld.each |r, i| { echo(i.toStr + ": " + r) }
+	}
+	
+	static Int:[Project:Student] MCNtimes(Student[] students, Project[] projects, Student:[Project:Int] rank, Int N)
+	{
+		projAssign := Int:[Project:Student][:]
+		
+		/* Any info from an actor should be sent as a message to another actor.
+		A "result" actor can store stuff in its actor.locals
+		(which can contain a Map etc) and read out stored data at the end.
+		It can be polled for the end point.
+
+		The work you do is the receive function of the Actor.
+		This would do one - or more than one - MC alloc and return the
+		allocations. The receive function can therefore have no parameters.
+		For efficiency the allocations should be immutable.
+
+		You need to have multiple actor instances (at least one per hardware
+		thread) to make use of concurrent execution.
+
+		In your case you can do what the primes example does and 
+		get data back from futures of the actors.
+		*/
+		
+		aPool := ActorPool { maxThreads = N }
+		aReply := Actor (aPool, |Obj o->Obj?| {printFunc(o)})
+		aProj := Actor(aPool, |->| {findProjs(students, projects, rank, N, aReply)})
+		aProj.send(projAssign)
+		
+		i := 0
+		while(i < N)
+		{
+			s := aReply.sendLater (Duration.fromStr("0.1sec"),"").get
+			Env.cur.out.writeChars("$s")
+			if(s.toStr.size > 0) i++
+		}
+		
+		/*
+		actor := [Int:Actor][:]
+		future := [Int:Future][:]
+		
+		echo("Creating actors...")
+		for(i := 1; i <= N; i++)
+		{
+			actor[i] = Actor(aPool, |->Project:Student| { MC(students, projects, rank) })
+		}
+		t1 := Duration.nowTicks
+		actor.each|a, i| { future[i] = a.send(i) }
+		//actors work, but..how the fuck do i read them
+		//actor.each { it.receive(msg) }
+
+		aPool.stop
+		num := 0
+		while (!aPool.isDone )
+		{
+			try
+				aPool.join(Duration.fromStr("0.5sec"))
+			catch (TimeoutErr e) {}
+		}
+		
+		elapsedMs := (Duration.nowTicks - t1)/1000000
+		
+		echo("Finished in ${elapsedMs}ms using $N threads ")
+		*/
+		/*
+		(1..N).each |n|
+		{
+			projAssign[n] = [:]
+			tmp := MC(students, projects, rank)
+			tmp.each |s, p| { projAssign[n].add(p, s) }
+		}
+		*/
+		return projAssign
+	}
+	
+	static Str? printFunc (Obj s)
+	{
+		h := Actor.locals.get("printFuncState","") as Str
+		if (s is Project:Student)
+		{
+			Actor.locals["printFuncState"] = "$h$s.toStr\n"
+			return (null)
+		}
+		else
+		{
+			Actor.locals["printFuncState"] = ""
+			return h
+		}	
+		
+	}
+	
+	static Void findProjs (Student[] students, Project[] projects, Student:[Project:Int] rank, Int max, Actor printFuncActor)
+	{
+		temp := Project:Student[:]
+		for (i := 1; i <= max; i++)
+		{
+			temp = MC(students, projects, rank)
+			printFuncActor.send(temp)
+		}
 	}
 	
 	static Project:Student MC(Student[] students, Project[] projects, Student:[Project:Int] rank)
@@ -104,65 +217,6 @@ const class Statistics
 		}
 		//echo(projAssign)
 
-		return projAssign
-	}
-	
-	static Int:[Project:Student] MCNtimes(Student[] students, Project[] projects, Student:[Project:Int] rank, Int N)
-	{
-		projAssign := Int:[Project:Student][:]
-		
-		/* Any info from an actor should be sent as a message to another actor.
-		A "result" actor can store stuff in its actor.locals
-		(which can contain a Map etc) and read out stored data at the end.
-		It can be polled for the end point.
-
-		The work you do is the receive function of the Actor.
-		This would do one - or more than one - MC alloc and return the
-		allocations. The receive function can therefore have no parameters.
-		For efficiency the allocations should be immutable.
-
-		You need to have multiple actor instances (at least one per hardware
-		thread) to make use of concurrent execution.
-
-		In your case you can do what the primes example does and 
-		get data back from futures of the actors.
-		*/
-		
-		aPool := ActorPool { maxThreads = N }
-		//watev := Project:Student[:]
-		actor := [Int:Actor][:]
-		future := [Int:Future][:]
-		
-		echo("Creating actors...")
-		for(i := 1; i <= N; i++)
-		{
-			actor[i] = Actor(aPool, |->Project:Student| { MC(students, projects, rank) })
-		}
-		t1 := Duration.nowTicks
-		actor.each|a, i| { future[i] = a.send(i) }
-		//actors work, but..how the fuck do i read them
-		//actor.each { it.receive("asd") }
-		aPool.stop
-		num := 0
-		while (!aPool.isDone )
-		{
-			try
-				aPool.join(Duration.fromStr("0.5sec"))
-			catch (TimeoutErr e) {}
-		}
-		
-		elapsedMs := (Duration.nowTicks - t1)/1000000
-		
-		echo("Finished in ${elapsedMs}ms using $N threads ")
-		
-		/*
-		(1..N).each |n|
-		{
-			projAssign[n] = [:]
-			tmp := MC(students, projects, rank)
-			tmp.each |s, p| { projAssign[n].add(p, s) }
-		}
-		*/
 		return projAssign
 	}
 	

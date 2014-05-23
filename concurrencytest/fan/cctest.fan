@@ -10,18 +10,18 @@ const class Clock : Actor
     new make(Label label) : super(ActorPool())
     {
         Actor.locals[handle] = label
-        //send(updateMsg)
+		//send(updateMsg)
         sendLater(1sec, "")
     }
     
     override Obj? receive(Obj? msg)
     {
-        if(msg == updateMsg)
-        {
+        //if(msg == updateMsg)
+        //{
             Desktop.callAsync |->| { update }
             //send(updateMsg)
             sendLater(0.1sec, "")
-        }
+        //}
         return null
     }
     
@@ -41,10 +41,10 @@ const class Clock : Actor
     {
         display := Label
         {
-           // text := "Does anybody know what time it is?"
+            text := "Does anybody know what time it is?"
             halign = Halign.center
         }
-        
+
         clock := Clock(display)
         
         Window
