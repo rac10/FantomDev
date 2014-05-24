@@ -7,12 +7,16 @@ const class Statistics
 {	
 	static Void main(Str[] args)
 	{
+		//random initailisation of data
 		stdList := (1..args[0].toInt).map { Student (it, "Stud" + it.toStr, 2050-it, "stud"+ (08..14).random.toStr) }
 		projList := (1..args[1].toInt).map { Project(it, it, "Prof" + (1..10).random.toStr, [null, "Dr " + it.toStr].random, ["BEng", "MEng", "MSc"].random, "Project" + it.toStr) }
 		supList := (1..args[2].toInt).map { Supervisor(it, "Prof" + it.toStr, ["E", "I"].random, ["E", "I"].random + (10..20).random.toStr, (1..5).random) }
 		//prefList := (1..stdList.size).map { Preference(stdList.getSafe(it), projList.getSafe(it), "Comment" + it.toStr, (1..projList.size).random.toFloat) }
 		rank := Student:[Project:Int]?[:]
+		//uses random probability to decide whether a student
+		//has made a preference or not
 		pS := 50
+		
 		stdList.shuffle
 		projList.shuffle
 		
@@ -26,8 +30,7 @@ const class Statistics
 				rank[s] = [:]
 				projList.each 
 				{ 
-					//uses random probability to decide whether a student
-					//has made a preference or not
+					
 					if((0..100).random <= pS)
 						rank[s][it] = (1..10).random
 					else rank[s][it] = -1
@@ -44,10 +47,10 @@ const class Statistics
 		//rank.each |r, i| { echo(i.toStr + " " +  r)  }
 		//hi := MC(stdList, projList, rank)
 		//echo(hi)
-		//countSup(supList, projList)
-		Nalloc := MCNtimes(stdList, projList, rank, 6)
-		Nalloc.each |r, i| { echo(i.toStr + ": " + r) }
-		assigned := findAssigned(Nalloc, projList)
+		countSup(supList, projList)
+		//Nalloc := MCNtimes(stdList, projList, rank, 50)
+		//Nalloc.each |r, i| { echo(i.toStr + ": " + r) }
+		//assigned := findAssigned(Nalloc, projList)
 
 	}
 	
@@ -119,6 +122,11 @@ const class Statistics
 	
 	static Int:[Project:Student] MCNtimes(Student[] students, Project[] projects, Student:[Project:Int] rank, Int N)
 	{
+		/** Performs MC simulation N times
+		* * Uses the MC() function originally implemented
+		* * Uses actors to perform concurrency and returns a list of maps.
+		*/
+		
 		projAssign := Int:[Project:Student][:]		
 		
 		//synchronised concurrency
@@ -149,7 +157,8 @@ const class Statistics
 	
 	static Int:[Project:Bool] findAssigned(Int:[Project:Student] MCres, Project[] projects)
 	{
-		//counts how many projects are assigned and unassigned
+		//counts how many projects are assigned
+		//unassigned projects are inferred
 		projAssign := Int:[Project:Bool][:]
 		projCount := Int:Int[:]
 		(1..MCres.size).each |n| 
@@ -166,8 +175,9 @@ const class Statistics
 	
 	static Student:Int findMin(Student:[Project:Int] rank)
 	{
-		tmp := Student:Int[:]
 		//find minimum rank of each student
+		//no longer used. used in previous iteration of MC() function
+		tmp := Student:Int[:]
 		rank.each |pf, s| 
 		{   
 			rankVals := Int[,]
@@ -186,7 +196,7 @@ const class Statistics
 		//counts how many projects has been allocated
 		//only counts mandatory supervisor
 		projAlloc := Supervisor:Int[:]
-		supervisors.each { projAlloc.getOrAdd(it) { 0 }}
+		supervisors.each { projAlloc[it] = 0 }
 		
 		projAlloc.each |i, s|
 		{ 
@@ -202,7 +212,6 @@ const class Statistics
 			}
 			else echo("No problems for " + s.name + " with " + s.max + " limit but currently has " + projAlloc[s] + " projects")
 		}
-		//projects.each { echo(it.sup1 + " " + it.sup2)  }
 		projAlloc.each |i, s| { echo(s.toStr + " with count " + projAlloc[s])  }
 	}
 }
