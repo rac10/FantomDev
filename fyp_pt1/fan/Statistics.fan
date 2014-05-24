@@ -8,14 +8,25 @@ const class Statistics
 	static Void main(Str[] args)
 	{
 		//random initailisation of data
-		stdList := (1..args[0].toInt).map { Student (it, "Stud" + it.toStr, 2050-it, "stud"+ (08..14).random.toStr) }
-		projList := (1..args[1].toInt).map { Project(it, it, "Prof" + (1..10).random.toStr, [null, "Dr " + it.toStr].random, ["BEng", "MEng", "MSc"].random, "Project" + it.toStr) }
-		supList := (1..args[2].toInt).map { Supervisor(it, "Prof" + it.toStr, ["E", "I"].random, ["E", "I"].random + (10..20).random.toStr, (1..5).random) }
+		Student[] stdList := [,]
+		Project[] projList := [,]
+		Supervisor[] supList := [,]
+		
+		allocOK := false
+		while(!allocOK)
+		{
+    		stdList = (1..args[0].toInt).map { Student (it, "Stud" + it.toStr, 2050-it, "stud"+ (08..14).random.toStr) }
+    		projList = (1..args[1].toInt).map { Project(it, it, "Prof" + (1..args[2].toInt).random.toStr, [null, "Dr " + it.toStr].random, ["BEng", "MEng", "MSc"].random, "Project" + it.toStr) }
+    		supList = (1..args[2].toInt).map { Supervisor(it, "Prof" + it.toStr, ["E", "I"].random, ["E", "I"].random + (10..20).random.toStr, (2..5).random) }
+			allocOK = countSup(supList, projList)
+		} 
+		
+		
 		//prefList := (1..stdList.size).map { Preference(stdList.getSafe(it), projList.getSafe(it), "Comment" + it.toStr, (1..projList.size).random.toFloat) }
 		rank := Student:[Project:Int]?[:]
 		//uses random probability to decide whether a student
 		//has made a preference or not
-		pS := 50
+		pS := 10
 		
 		stdList.shuffle
 		projList.shuffle
@@ -45,16 +56,17 @@ const class Statistics
 		
 		
 		//rank.each |r, i| { echo(i.toStr + " " +  r)  }
-		//hi := MC(stdList, projList, rank)
+		//hi := MC(stdList, projList, supList, rank)
 		//echo(hi)
-		countSup(supList, projList)
-		//Nalloc := MCNtimes(stdList, projList, rank, 50)
+		watev := countSup(supList, projList)
+		//echo(watev)
+		//Nalloc := MCNtimes(stdList, projList, supList, rank, 50)
 		//Nalloc.each |r, i| { echo(i.toStr + ": " + r) }
 		//assigned := findAssigned(Nalloc, projList)
 
 	}
 	
-	static Project:Student MC(Student[] students, Project[] projects, Student:[Project:Int] rank)
+	static Project:Student MC(Student[] students, Project[] projects, Supervisor[] supervisors, Student:[Project:Int] rank)
 	{
 		/** Performs Monte-Carlo simulation
 		* * Allocates randomly. Allocation is not guaranteed for all students
@@ -98,12 +110,12 @@ const class Statistics
     				}
 					
     				//use rankProj to determine the project assignments
-    				p := rankProj.eachWhile |proj| { proj.random }
+    				p := (Project?) rankProj.eachWhile |proj| { proj.random }
 					if(p != null)
 					{
         				projAssign[p] = s
         				projAssigned[p] = true
-        				
+        				//[p.sup1]++
 						//removes the allocated project
         				studTmp.each  { rankTmp[it].remove(p) }
         				projTmp.remove(p)
@@ -120,7 +132,7 @@ const class Statistics
 		return projAssign
 	}
 	
-	static Int:[Project:Student] MCNtimes(Student[] students, Project[] projects, Student:[Project:Int] rank, Int N)
+	static Int:[Project:Student] MCNtimes(Student[] students, Project[] projects, Supervisor[] supervisors, Student:[Project:Int] rank, Int N)
 	{
 		/** Performs MC simulation N times
 		* * Uses the MC() function originally implemented
@@ -137,7 +149,7 @@ const class Statistics
 		//Creating actors
 		for(i := 1; i <= N; i++)
 		{
-			actor[i] = Actor(aPool, |->Project:Student| { MC(students, projects, rank).toImmutable })
+			actor[i] = Actor(aPool, |->Project:Student| { MC(students, projects, supervisors, rank).toImmutable })
 		}
 		actor.each|a, i| { future[i] = a.send(i) }	
 		
@@ -191,13 +203,15 @@ const class Statistics
 		return tmp
 	}
 	
-	static Void countSup(Supervisor[] supervisors, Project[] projects)
+	static Bool countSup(Supervisor[] supervisors, Project[] projects)
 	{
 		//counts how many projects has been allocated
 		//only counts mandatory supervisor
 		projAlloc := Supervisor:Int[:]
 		supervisors.each { projAlloc[it] = 0 }
+		OK := true
 		
+
 		projAlloc.each |i, s|
 		{ 
 			projects.each 
@@ -205,13 +219,20 @@ const class Statistics
 				if(s.name == it.sup1)
 					projAlloc[s]++
 			}
+			
+			//too many projects for current supervisor
 			if(projAlloc[s] > s.max)
 			{
-				echo("Max limit of " + s.max + " for " + s.name + " surpassed. Currently assigned " + projAlloc[s] + " projects. Resetting to infinity..")
-				projAlloc[s] = 999
+				echo("Max limit of " + s.max + " for " + s.name + " surpassed. Currently assigned " + projAlloc[s] + " projects.")
+				OK = false
 			}
 			else echo("No problems for " + s.name + " with " + s.max + " limit but currently has " + projAlloc[s] + " projects")
 		}
-		projAlloc.each |i, s| { echo(s.toStr + " with count " + projAlloc[s])  }
+		return OK
+
+		
+		//projAlloc.each |i, s| { echo(s.toStr + " with count " + projAlloc[s])  }
+		//return projAlloc
 	}
+	
 }
