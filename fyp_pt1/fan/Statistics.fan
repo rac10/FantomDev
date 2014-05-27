@@ -65,6 +65,11 @@ const class Statistics
 		assigned := findAssigned(Nalloc, projList)
 		projProb := calcProjProb(Nalloc, projList)
 		studProb := calcStudProb(Nalloc, stdList)
+		objFn := calcObjFn(rank, stdList, Nalloc)
+		objFn.each |b, a| { echo("Iteration $a: objective function $b") }
+		min := Int.maxVal
+		objFn.each |b, a| { if(min > b) min = b }
+		echo("Minimum value obtained is: $min")
 
 	}
 	
@@ -254,7 +259,7 @@ const class Statistics
 			}
 		}
 		projects.each { projProb[it] *= 100f/rankList.size.toFloat }
-		projProb.each |i, p| { echo("Probability for $p.title being assigned is $i%") }
+		//projProb.each |i, p| { echo("Probability for $p.title being assigned is $i%") }
 		return projProb
 	}
 	
@@ -277,8 +282,32 @@ const class Statistics
 			}
 		}
 		students.each { studProb[it] *= 100f/rankList.size.toFloat }
-		studProb.each |i, s| { echo("Probability for $s.name being assigned is $i%") }
+		//studProb.each |i, s| { echo("Probability for $s.name being assigned is $i%") }
 		return studProb
+	}
+	
+	static Int:Int calcObjFn(Student:[Project:Int] rank, Student[] students, Int:[Project:Student] rankList)
+	{
+		//need to do sum of all ranks of EACH STUDENT
+		//if unallocated, then rank is set to 11
+		//all ranks eventually raised to power K
+		
+		//rankList shows the allocation of project:student for each iteration
+		//rank shows the Students' preferences per student. rank[s][p] = -1 indicates that there is no preference
+		sum := Int:Int[:]
+		K := 2
+		(1..rankList.size).each { sum[it] = 0 }
+		rankList.each |ps, i|
+		{
+			ps.each |s, p|
+			{
+				if(rank[s][p] != -1)
+					sum[i] += rank[s][p]
+				else sum[i] += 11
+			}
+			sum[i] = sum[i].pow(K)
+		}
+		return sum
 	}
 	
 }
