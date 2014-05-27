@@ -63,6 +63,8 @@ const class Statistics
 		Nalloc := MCNtimes(stdList, projList, supList, rank, 50)
 		//Nalloc.each |r, i| { echo(i.toStr + ": " + r) }
 		assigned := findAssigned(Nalloc, projList)
+		projProb := calcProjProb(Nalloc, projList)
+		studProb := calcStudProb(Nalloc, stdList)
 
 	}
 	
@@ -180,7 +182,7 @@ const class Statistics
 		}
 		MCres.each |ps, i| { ps.each |s, p| { if(projects.any { it == p}) projAssign[i][p] = true }  }
 		projAssign.each |pb, i| { pb.each |b, p| { if(b) projCount[i]++  }  }
-		projCount.each |j, i| { echo("Run $i: $j projects assigned of $projects.size projects")  }
+		//projCount.each |j, i| { echo("Run $i: $j projects assigned of $projects.size projects")  }
 		return projAssign
 	}
 	
@@ -232,6 +234,51 @@ const class Statistics
 		
 		//projAlloc.each |i, s| { echo(s.toStr + " with count " + projAlloc[s])  }
 		//return projAlloc
+	}
+	
+	static Project:Float calcProjProb(Int:[Project:Student] rankList,  Project[] projects)
+	{
+		//calculates probability of each project being assigned
+		projProb := Project:Float[:]
+		
+		//initialising
+		projects.each { projProb[it] = 0f }
+		
+		//adding and calculation
+		rankList.each |ps, i| 
+		{ 
+			ps.each |Student? s, Project? p| 
+			{ 	
+				if(projects.any { p.pid == it.pid })
+					projProb[p]++
+			}
+		}
+		projects.each { projProb[it] *= 100f/rankList.size.toFloat }
+		projProb.each |i, p| { echo("Probability for $p.title being assigned is $i%") }
+		return projProb
+	}
+	
+	static Student:Float calcStudProb(Int:[Project:Student] rankList, Student[] students)
+	{
+		//calculates probability of each student being assigned
+		studProb := Student:Float[:]
+		
+		//initialising
+		students.each { studProb[it] = 0f }
+		
+		//adding and calculation
+		rankList.each |ps, i| 
+		{ 
+			ps.each |Student? s, Project? p| 
+			{ 
+				if(students.any { s.name == it.name }) 
+					studProb[s]++
+
+			}
+		}
+		students.each { studProb[it] *= 100f/rankList.size.toFloat }
+		studProb.each |i, s| { echo("Probability for $s.name being assigned is $i%") }
+		return studProb
 	}
 	
 }
