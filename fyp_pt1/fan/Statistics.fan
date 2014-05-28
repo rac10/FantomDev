@@ -21,7 +21,7 @@ const class Statistics
     		supList = (1..args[2].toInt).map { Supervisor(it, "Prof" + it.toStr, ["E", "I"].random, ["E", "I"].random + (10..20).random.toStr, (2..5).random) }
 			allocOK = checkSup(supList, projList)
 		}
-		echo("Lists generated successfully!")
+		echo("Lists generated successfully!\n")
 		
 		
 		//prefList := (1..stdList.size).map { Preference(stdList.getSafe(it), projList.getSafe(it), "Comment" + it.toStr, (1..projList.size).random.toFloat) }
@@ -60,7 +60,7 @@ const class Statistics
 		//rank.each |r, i| { echo(i.toStr + " " +  r)  }
 		//hi := MC(stdList, projList, supList, rank)
 		//echo(hi))
-		Nalloc := MCNtimes(stdList, projList, supList, rank, 50)
+		Nalloc := MCNtimes(stdList, projList, supList, rank, 3)
 		//Nalloc.each |r, i| { echo(i.toStr + ": " + r) }
 		assigned := findAssigned(Nalloc, projList)
 		projProb := calcProjProb(Nalloc, projList)
@@ -68,8 +68,14 @@ const class Statistics
 		objFn := calcObjFn(rank, stdList, Nalloc)
 		objFn.each |b, a| { echo("Iteration $a: objective function $b") }
 		min := Int.maxVal
-		objFn.each |b, a| { if(min > b) min = b }
+		max := Int.minVal
+		avg := 0
+		objFn.each { if(min > it) min = it; if(max < it) max = it; avg += it }
+		avg /= objFn.size
 		echo("Minimum value obtained is: $min")
+		echo("Max value obtained is: $max")
+		echo("Average value is: $avg")
+		shiftProjs(Nalloc,stdList, projList)
 
 	}
 	
@@ -124,9 +130,10 @@ const class Statistics
         				projAssigned[p] = true
 						
 						//removes the allocated project
-        				studTmp.each  { rankTmp[it].remove(p) }
+        				studTmp.each { rankTmp[it].remove(p) }
         				projTmp.remove(p)
 					}
+					
 					//clear rankProj. using .clear removes all pointers; don't do that
     				(1..10).each { rankProj[it] = [,] }
 				}
@@ -308,6 +315,104 @@ const class Statistics
 			sum[i] = sum[i].pow(K)
 		}
 		return sum
+	}
+	
+	static Void simAnneal(Project:Student proj)
+	{
+		/*	1) Select an initial value
+            2) Obtain the objective function
+            3) Select the reduction factor
+            4) Randomly select a value neighbouring the initial value
+            5) Calculate the difference between the neighbouring value and the initial value
+            	a. If the difference is less than zero, then use the neighbouring value as the new initial value for the next iteration
+            b. Otherwise, generate a random number such that if this random number is less a defined factor, then the neighbouring value is assigned as the new initial value for the following iteration
+            6) Repeat the iterations as needed
+            7) Scale the objective function by the reduction factor
+            8) Repeat until the halting condition is met */
+		
+	}
+	
+	static Void getNextProj(Project? A, Project? B)
+	{
+		if(A != null && B != null)
+		{
+			A = B
+			B = null
+		}
+	}
+	
+	static Void moveA(Student:Project SP, Project[] projs)
+	{
+		//CONSIDER USING 2 ARRAYS INSTEAD OF A MAP TO TRAVERSE THROUGH THE SHIT
+		//move each student to another project
+		//last student is given an arbitrary project
+		//what is the first S:P?
+		newStudProj := Student:Project[:]
+		i := 1
+		Project? curProj
+		Project? nextProj
+		SP.each |p, s| 
+		{  
+			if(i==1) 
+				curProj = p 
+			
+			if(i==2) 
+				nextProj = p  
+			i++
+		}
+		i = 1
+		SP.each |p, s| 
+		{ 
+			if(i < SP.size)
+			{
+				newStudProj[s] = nextProj
+				getNextProj(curProj, nextProj)
+			}
+			else
+			{
+				newStudProj[s] = projs.random   
+			}
+			
+		}
+		
+	}
+	
+	static Void moveE()
+	{
+		//move a student with an allocated project to a null project
+	}
+	
+	static Void moveF()
+	{
+		//move a student that is unallocated to another student's roject
+	}
+	
+	static Void shiftProjs(Int:[Project:Student] rankList, Student[] students, Project[] projects)
+	{
+		//maybe consider using Student[], Project[] as parameters
+		newRank := Int:[Student:Project][:]
+		(1..rankList.size).each { newRank[it] = [:] }
+		curProj := rankList[1]
+		nextProj := rankList[2]
+		rankList.each |ps, i|
+		{
+			/*
+			//this is a rotate
+			if(i+1 <= rankList.size)
+				newRank[i] = rankList[i+1]
+			else newRank[i] = rankList[1]
+			*/
+			ps.each |Student s, Project p|
+			{
+				newRank[i][s] = p
+				
+			}
+		}
+		
+		moveA(newRank[1], projects)
+		
+		//rankList.each |r, i| { echo("$i: $r")  }
+		//newRank.each |r, i| { echo("$i: $r")  }
 	}
 	
 }

@@ -26,7 +26,19 @@ class Optimise
 							-takes info from current allocation
 							-how many choices for project + rank for each project, gather stats for each project
 		
+		
+		1) Select an initial value
+    2) Obtain the objective function
+    3) Select the reduction factor
+    4) Randomly select a value neighbouring the initial value
+    5) Calculate the difference between the neighbouring value and the initial value
+    	a. If the difference is less than zero, then use the neighbouring value as the new initial value for the next iteration
+    b. Otherwise, generate a random number such that if this random number is less a defined factor, then the neighbouring value is assigned as the new initial value for the following iteration
+    6) Repeat the iterations as needed
+    7) Scale the objective function by the reduction factor
+    8) Repeat until the halting condition is met
 		*/
+		reduc := 0.4f
 
 	}
 }
