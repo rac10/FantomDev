@@ -332,59 +332,79 @@ const class Statistics
 		
 	}
 	
-	static Void getNextProj(Project? A, Project? B)
-	{
-		if(A != null && B != null)
-		{
-			A = B
-			B = null
-		}
-	}
-	
-	static Void moveA(Student:Project SP, Project[] projs)
+	static Student:Project moveA(Student:Project SP, Project[] projs)
 	{
 		//CONSIDER USING 2 ARRAYS INSTEAD OF A MAP TO TRAVERSE THROUGH THE SHIT
 		//move each student to another project
 		//last student is given an arbitrary project
 		//what is the first S:P?
+		newStud := Student[,]
+		newProj := Project[,]
 		newStudProj := Student:Project[:]
-		i := 1
-		Project? curProj
-		Project? nextProj
 		SP.each |p, s| 
 		{  
-			if(i==1) 
-				curProj = p 
-			
-			if(i==2) 
-				nextProj = p  
-			i++
+			newStud.add(s)
+			newProj.add(p)
 		}
-		i = 1
-		SP.each |p, s| 
+		
+		newStud.each |s, i| 
 		{ 
-			if(i < SP.size)
-			{
-				newStudProj[s] = nextProj
-				getNextProj(curProj, nextProj)
-			}
+			if(i+1 < newProj.size) 	
+				newStudProj[s] = newProj[i+1]  
 			else
-			{
-				newStudProj[s] = projs.random   
-			}
-			
+				newStudProj[s] = newProj.random
 		}
+		echo(SP)
+		echo(newStudProj)
+		return newStudProj
 		
 	}
 	
-	static Void moveE()
+	static Student:Project moveE(Student:Project SP, Student stud)
 	{
 		//move a student with an allocated project to a null project
+		newStud := Student[,]
+		newProj := Project[,]
+		newStudProj := Student:Project?[:]
+		SP.each |p, s| 
+		{  
+			newStud.add(s)
+			newProj.add(p)
+		}
+		
+		newStud.each |s, i|
+		{
+			if(s != stud)
+				newStudProj[s] = newProj[i]
+			else newStudProj[s] = null
+		}
+		
+		return newStudProj
 	}
 	
-	static Void moveF()
+	static Student:Project moveF(Student:Project SP, Student[] students)
 	{
-		//move a student that is unallocated to another student's roject
+		//move a student that is unallocated to another student's project
+		//requires the rank of the student to be known
+		newStud := Student[,]
+		newProj := Project[,]
+		newStudProj := Student:Project?[:]
+		SP.each |p, s| 
+		{  
+			newStud.add(s)
+			newProj.add(p)
+		}
+		studAssigned := 0
+		students.each |s| { if(newStud.any { it.name == s.name}) studAssigned++ }
+		echo(studAssigned)
+		newStud.each |s, i|
+		{
+			if(s != students[i])
+				newStudProj[s] = newProj[i]
+			else newStudProj[s] = null
+		}
+		
+		return newStudProj
 	}
 	
 	static Void shiftProjs(Int:[Project:Student] rankList, Student[] students, Project[] projects)
@@ -409,7 +429,8 @@ const class Statistics
 			}
 		}
 		
-		moveA(newRank[1], projects)
+		//asdf := moveA(newRank[1], projects)
+		dfg := moveF(newRank[1], students)
 		
 		//rankList.each |r, i| { echo("$i: $r")  }
 		//newRank.each |r, i| { echo("$i: $r")  }
