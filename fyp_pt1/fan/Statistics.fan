@@ -66,16 +66,16 @@ const class Statistics
 		projProb := calcProjProb(Nalloc, projList)
 		studProb := calcStudProb(Nalloc, stdList)
 		objFn := calcObjFn(rank, stdList, Nalloc)
-		objFn.each |b, a| { echo("Iteration $a: objective function $b") }
+		//objFn.each |b, a| { echo("Iteration $a: objective function $b") }
 		min := Int.maxVal
 		max := Int.minVal
 		avg := 0
 		objFn.each { if(min > it) min = it; if(max < it) max = it; avg += it }
 		avg /= objFn.size
-		echo("Minimum value obtained is: $min")
-		echo("Max value obtained is: $max")
-		echo("Average value is: $avg")
-		shiftProjs(Nalloc,stdList, projList)
+		//echo("Minimum value obtained is: $min")
+		//echo("Max value obtained is: $max")
+		//echo("Average value is: $avg")
+		shiftProjs(Nalloc,stdList, projList, assigned, rank)
 
 	}
 	
@@ -382,40 +382,63 @@ const class Statistics
 		return newStudProj
 	}
 	
-	static Student:Project moveF(Student:Project SP, Student[] students)
+	static Student:Project? moveF(Student:Project? SP, Student[] students, Project:Bool projAssign, Project[] projects)
 	{
 		//move a student that is unallocated to another student's project
 		//requires the rank of the student to be known
 		newStud := Student[,]
-		newProj := Project[,]
+		remProj := Project?[,]
+		newProj := Project?[,]
 		newStudProj := Student:Project?[:]
 		SP.each |p, s| 
 		{  
 			newStud.add(s)
 			newProj.add(p)
 		}
-		studAssigned := 0
-		students.each |s| { if(newStud.any { it.name == s.name}) studAssigned++ }
-		echo(studAssigned)
-		newStud.each |s, i|
-		{
-			if(s != students[i])
-				newStudProj[s] = newProj[i]
-			else newStudProj[s] = null
-		}
+		remProj = projects.removeAll(newProj)
+		/*
+		projects.each |p|
+		{ 
+			if(!projects.any {it.pid == newProj[p].pid}) 
+				remProj.add(p)
+		}*/
+		echo(newProj)
+		echo(remProj)
+		//studAssigned := 0
+		//students.each |s| { if(SP[s] != null) studAssigned++ }
+		//echo(studAssigned)
+		//projAssign.each |b, p| { if(!b) echo(p) }
 		
+		//need to ensure that giving the students their projects
+		//that the project being assigned doesn't exceed supervisor limit
+
+		SP.each |p, s|
+		{
+			if(p != null)
+    			newStudProj[s] = p
+			else 
+			{ 
+				proj := remProj.random
+				newStudProj[s] = proj
+				remProj.remove(proj)
+			}
+		} 
+		
+		echo(SP)
+		echo(newStudProj)
 		return newStudProj
 	}
 	
-	static Void shiftProjs(Int:[Project:Student] rankList, Student[] students, Project[] projects)
+	static Void shiftProjs(Int:[Project:Student] rankList, Student[] students, Project[] projects, Int:[Project:Bool] projAssign, Student:[Project:Int] rank)
 	{
 		//maybe consider using Student[], Project[] as parameters
-		newRank := Int:[Student:Project][:]
+		newRank := Int:[Student:Project?][:]
 		(1..rankList.size).each { newRank[it] = [:] }
-		curProj := rankList[1]
-		nextProj := rankList[2]
 		rankList.each |ps, i|
 		{
+			if(newRank[i].isEmpty)
+				students.each { newRank[i][it] = null }
+			
 			/*
 			//this is a rotate
 			if(i+1 <= rankList.size)
@@ -428,9 +451,9 @@ const class Statistics
 				
 			}
 		}
-		
+		//echo(newRank)
 		//asdf := moveA(newRank[1], projects)
-		dfg := moveF(newRank[1], students)
+		dfg := moveF(newRank[1], students, projAssign[1], projects)
 		
 		//rankList.each |r, i| { echo("$i: $r")  }
 		//newRank.each |r, i| { echo("$i: $r")  }
