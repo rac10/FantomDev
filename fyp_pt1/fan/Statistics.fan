@@ -383,72 +383,9 @@ const class Statistics
 			}
 		}
 		SP.clear
-		SP.addAll(newStudProj)
-		
+		SP.addAll(newStudProj)	
 	}
-	
-	static Void unallocStud(Student:Project? SP, Student stud)
-	{
-		//move a student with an allocated project to a null project
-		newStud := Student[,]
-		newProj := Project?[,]
-		newStudProj := Student:Project?[:]
-		SP.each |p, s| 
-		{  
-			newStud.add(s)
-			newProj.add(p)
-		}
-		
-		newStud.each |s, i|
-		{
-			if(s != stud)
-				newStudProj[s] = newProj[i]
-			else newStudProj[s] = null
-		}
-		SP.clear
-		SP.addAll(newStudProj)
-	}
-	
-	static Void allocStud(Student:Project? SP, Student[] students, Project:Bool projAssign, Project[] projects, Student:[Project:Int] rank)
-	{
-		//move a student that is unallocated (null project) to another student's project
-		//requires the rank of the student to be known (i.e. not -1)
-		newStud := Student[,]
-		remProj := Project?[,]
-		newProj := Project?[,]
-		newStudProj := Student:Project?[:]
-		SP.each |p, s| 
-		{  
-			newStud.add(s)
-			newProj.add(p)
-		}
-		projects.each { remProj.add(it) }
-		remProj.removeAll(newProj)
-		
-		SP.each |p, s|
-		{
-			if(p != null)
-    			newStudProj[s] = p
-			else 
-			{
-				assigned := false
-    			remProj.each 
-				{ 
-    				if(rank[s][it] != -1 && !projAssign[it])
-    				{
-        				newStudProj[s] = it
-        				remProj.remove(it)
-    					assigned = true
-    				} 
-    			}
-				if(!assigned)
-					newStudProj[s] = null	
-			}
-		} 
 
-		SP.clear
-		SP.addAll(newStudProj)
-	}
 	
 	static Int:[Student:Project?] shiftProjs(Int:[Project:Student] rankList, Student[] students, Project[] projects, Int:[Project:Bool] projAssign, Student:[Project:Int] rank)
 	{
@@ -467,51 +404,7 @@ const class Statistics
 		
 		return newRank
 	}
-	
-	static Int:[Student:Project?] addProjs(Int:[Project:Student] rankList, Student[] students, Project[] projects, Int:[Project:Bool] projAssign, Student:[Project:Int] rank)
-	{
-		newRank := Int:[Student:Project?][:]
-		resRank := Student:Project?[:]
-		(1..rankList.size).each { newRank[it] = [:] }
-		rankList.each |ps, i|
-		{
-			if(newRank[i].isEmpty)
-				students.each { newRank[i][it] = null }
-			
-			ps.each |Student s, Project p| { newRank[i][s] = p }
-		}
-		
-		(1..newRank.size).each 
-		{ 
-			moveStud(newRank[it], projects.toImmutable, projAssign[it], rank, false)
-			allocStud(newRank[it], students, projAssign[it], projects, rank)
-		}
-		
-		return newRank
-	}
-	
-	static Int:[Student:Project?] delProjs(Int:[Project:Student] rankList, Student[] students, Project[] projects, Int:[Project:Bool] projAssign, Student:[Project:Int] rank)
-	{
-		newRank := Int:[Student:Project?][:]
-		resRank := Student:Project?[:]
-		(1..rankList.size).each { newRank[it] = [:] }
-		rankList.each |ps, i|
-		{
-			if(newRank[i].isEmpty)
-				students.each { newRank[i][it] = null }
-			
-			ps.each |Student s, Project p| { newRank[i][s] = p }
-		}
-		
-		(1..newRank.size).each 
-		{ 
-			moveStud(newRank[it], projects.toImmutable, projAssign[it], rank, false)
-			unallocStud(newRank[it], students.random)
-		}
-		
-		return newRank
-	}
-	
+
 	static Int:[Student:Project?] rotateProjs(Int:[Project:Student] rankList, Student[] students, Project[] projects, Int:[Project:Bool] projAssign, Student:[Project:Int] rank)
 	{
 		newRank := Int:[Student:Project?][:]
