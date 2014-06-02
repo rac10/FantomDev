@@ -76,7 +76,7 @@ const class Statistics
 		//echo("Minimum value obtained is: $min")
 		//echo("Max value obtained is: $max")
 		//echo("Average value is: $avg")
-		//shift := shiftProjs(Nalloc,stdList, projList, assigned, rank)
+		shift := shiftProjs(Nalloc,stdList, projList, assigned, rank)
 		//add := addProjs(Nalloc, stdList, projList, assigned, rank)
 		//del := delProjs(Nalloc, stdList, projList, assigned, rank)
 		rot := rotateProjs(Nalloc, stdList, projList, assigned, rank)
@@ -246,10 +246,6 @@ const class Statistics
 			//else echo("No problems for " + s.name + " with " + s.max + " limit but currently has " + projAlloc[s] + " projects")
 		}
 		return OK
-
-		
-		//projAlloc.each |i, s| { echo(s.toStr + " with count " + projAlloc[s])  }
-		//return projAlloc
 	}
 	
 	static Project:Float calcProjProb(Int:[Project:Student] rankList,  Project[] projects)
@@ -466,8 +462,7 @@ const class Statistics
 			
 			ps.each |Student s, Project p| { newRank[i][s] = p }
 		}
-		echo("$rank\n")
-		
+
 		(1..newRank.size).each { moveStud(newRank[it], projects.toImmutable, projAssign[it], rank, false) }
 		
 		return newRank
@@ -510,10 +505,8 @@ const class Statistics
 		
 		(1..newRank.size).each 
 		{ 
-			echo(newRank[it])
 			moveStud(newRank[it], projects.toImmutable, projAssign[it], rank, false)
 			unallocStud(newRank[it], students.random)
-			echo("${newRank[it]}\n")
 		}
 		
 		return newRank
@@ -533,12 +526,7 @@ const class Statistics
 		}
 		
 		
-		(1..newRank.size).each 
-		{
-			echo(newRank[it])
-			moveStud(newRank[it], projects.toImmutable, projAssign[it], rank, true)
-			echo("${newRank[it]}\n")
-		}
+		(1..newRank.size).each { moveStud(newRank[it], projects.toImmutable, projAssign[it], rank, true) }
 		
 		return newRank
 	}
