@@ -76,7 +76,10 @@ const class Statistics
 		//echo("Minimum value obtained is: $min")
 		//echo("Max value obtained is: $max")
 		//echo("Average value is: $avg")
-		shiftProjs(Nalloc,stdList, projList, assigned, rank)
+		//shift := shiftProjs(Nalloc,stdList, projList, assigned, rank)
+		//add := addProjs(Nalloc, stdList, projList, assigned, rank)
+		//del := delProjs(Nalloc, stdList, projList, assigned, rank)
+		rot := rotateProjs(Nalloc, stdList, projList, assigned, rank)
 
 	}
 	
@@ -333,7 +336,7 @@ const class Statistics
 		
 	}
 	
-	static Void moveA(Student:Project? SP, Project[] projs, Project:Bool projAssign, Student:[Project:Int] rank)
+	static Void moveStud(Student:Project? SP, Project[] projs, Project:Bool projAssign, Student:[Project:Int] rank, Bool rotate)
 	{
 		//move each student to another project
 		//last student is given an arbitrary project in his preferences (if assignable)
@@ -351,27 +354,36 @@ const class Statistics
 		remProj.removeAll(newProj)
 		newStud.each |s, i| 
 		{ 
-			if(i+1 < newProj.size)
-			{
-				newStudProj[s] = newProj[i+1]
-				if(i == 0 && newProj[i] != null)
-					projAssign[newProj[i]] = false
+			if(!rotate)
+    			{
+    			if(i+1 < newProj.size)
+    			{
+    				newStudProj[s] = newProj[i+1]
+    				if(i == 0 && newProj[i] != null)
+    					projAssign[newProj[i]] = false
+    			}
+    			else
+    			{
+    				assigned := false
+    				projs.each 
+    				{
+            			if(rank[s][it] != -1 && !projAssign[it])
+            			{
+            				newStudProj[s] = it
+            				projAssign[it] = true
+    						assigned = true
+            			}
+    				}
+    				if(!assigned)
+    					newStudProj[s] = null
+    
+    			}
 			}
 			else
 			{
-				assigned := false
-				projs.each 
-				{
-        			if(rank[s][it] != -1 && !projAssign[it])
-        			{
-        				newStudProj[s] = it
-        				projAssign[it] = true
-						assigned = true
-        			}
-				}
-				if(!assigned)
-					newStudProj[s] = null
-
+				if(i+1 < SP.size)
+					newStudProj[s] = newProj[i+1]
+                else newStudProj[s] = newProj.first
 			}
 		}
 		SP.clear
@@ -379,7 +391,7 @@ const class Statistics
 		
 	}
 	
-	static Void moveE(Student:Project? SP, Student stud)
+	static Void unallocStud(Student:Project? SP, Student stud)
 	{
 		//move a student with an allocated project to a null project
 		newStud := Student[,]
@@ -401,9 +413,9 @@ const class Statistics
 		SP.addAll(newStudProj)
 	}
 	
-	static Void moveF(Student:Project? SP, Student[] students, Project:Bool projAssign, Project[] projects, Student:[Project:Int] rank)
+	static Void allocStud(Student:Project? SP, Student[] students, Project:Bool projAssign, Project[] projects, Student:[Project:Int] rank)
 	{
-		//move a student that is unallocated to another student's project
+		//move a student that is unallocated (null project) to another student's project
 		//requires the rank of the student to be known (i.e. not -1)
 		newStud := Student[,]
 		remProj := Project?[,]
@@ -416,7 +428,7 @@ const class Statistics
 		}
 		projects.each { remProj.add(it) }
 		remProj.removeAll(newProj)
-		echo(remProj)
+		
 		SP.each |p, s|
 		{
 			if(p != null)
@@ -442,7 +454,7 @@ const class Statistics
 		SP.addAll(newStudProj)
 	}
 	
-	static Void shiftProjs(Int:[Project:Student] rankList, Student[] students, Project[] projects, Int:[Project:Bool] projAssign, Student:[Project:Int] rank)
+	static Int:[Student:Project?] shiftProjs(Int:[Project:Student] rankList, Student[] students, Project[] projects, Int:[Project:Bool] projAssign, Student:[Project:Int] rank)
 	{
 		newRank := Int:[Student:Project?][:]
 		resRank := Student:Project?[:]
@@ -452,26 +464,82 @@ const class Statistics
 			if(newRank[i].isEmpty)
 				students.each { newRank[i][it] = null }
 			
-			/*
-			//this is a rotate
-			if(i+1 <= rankList.size)
-				newRank[i] = rankList[i+1]
-			else newRank[i] = rankList[1]
-			*/
-			ps.each |Student s, Project p|
-			{
-				newRank[i][s] = p
-				
-			}
+			ps.each |Student s, Project p| { newRank[i][s] = p }
 		}
 		echo("$rank\n")
-		echo(newRank[1])
-		moveA(newRank[1], projects.toImmutable, projAssign[1], rank)
-		echo(newRank[1])
-		moveF(newRank[1], students, projAssign[1], projects, rank)
-		echo(newRank[1])
-		//rankList.each |r, i| { echo("$i: $r")  }
-		//newRank.each |r, i| { echo("$i: $r")  }
+		
+		(1..newRank.size).each { moveStud(newRank[it], projects.toImmutable, projAssign[it], rank, false) }
+		
+		return newRank
 	}
 	
+	static Int:[Student:Project?] addProjs(Int:[Project:Student] rankList, Student[] students, Project[] projects, Int:[Project:Bool] projAssign, Student:[Project:Int] rank)
+	{
+		newRank := Int:[Student:Project?][:]
+		resRank := Student:Project?[:]
+		(1..rankList.size).each { newRank[it] = [:] }
+		rankList.each |ps, i|
+		{
+			if(newRank[i].isEmpty)
+				students.each { newRank[i][it] = null }
+			
+			ps.each |Student s, Project p| { newRank[i][s] = p }
+		}
+		
+		(1..newRank.size).each 
+		{ 
+			moveStud(newRank[it], projects.toImmutable, projAssign[it], rank, false)
+			allocStud(newRank[it], students, projAssign[it], projects, rank)
+		}
+		
+		return newRank
+	}
+	
+	static Int:[Student:Project?] delProjs(Int:[Project:Student] rankList, Student[] students, Project[] projects, Int:[Project:Bool] projAssign, Student:[Project:Int] rank)
+	{
+		newRank := Int:[Student:Project?][:]
+		resRank := Student:Project?[:]
+		(1..rankList.size).each { newRank[it] = [:] }
+		rankList.each |ps, i|
+		{
+			if(newRank[i].isEmpty)
+				students.each { newRank[i][it] = null }
+			
+			ps.each |Student s, Project p| { newRank[i][s] = p }
+		}
+		
+		(1..newRank.size).each 
+		{ 
+			echo(newRank[it])
+			moveStud(newRank[it], projects.toImmutable, projAssign[it], rank, false)
+			unallocStud(newRank[it], students.random)
+			echo("${newRank[it]}\n")
+		}
+		
+		return newRank
+	}
+	
+	static Int:[Student:Project?] rotateProjs(Int:[Project:Student] rankList, Student[] students, Project[] projects, Int:[Project:Bool] projAssign, Student:[Project:Int] rank)
+	{
+		newRank := Int:[Student:Project?][:]
+		resRank := Student:Project?[:]
+		(1..rankList.size).each { newRank[it] = [:] }
+		rankList.each |ps, i|
+		{
+			if(newRank[i].isEmpty)
+				students.each { newRank[i][it] = null }
+			
+			ps.each |Student s, Project p| { newRank[i][s] = p }
+		}
+		
+		
+		(1..newRank.size).each 
+		{
+			echo(newRank[it])
+			moveStud(newRank[it], projects.toImmutable, projAssign[it], rank, true)
+			echo("${newRank[it]}\n")
+		}
+		
+		return newRank
+	}
 }
