@@ -77,8 +77,6 @@ const class Statistics
 		//echo("Max value obtained is: $max")
 		//echo("Average value is: $avg")
 		shift := shiftProjs(Nalloc,stdList, projList, assigned, rank)
-		//add := addProjs(Nalloc, stdList, projList, assigned, rank)
-		//del := delProjs(Nalloc, stdList, projList, assigned, rank)
 		rot := rotateProjs(Nalloc, stdList, projList, assigned, rank)
 
 	}
@@ -329,7 +327,49 @@ const class Statistics
             6) Repeat the iterations as needed
             7) Scale the objective function by the reduction factor
             8) Repeat until the halting condition is met */
-		
+	/*	
+		 double first_run, second_run, third_run;        //(first, second and third run) are defined for the purpose of comparing the resulting
+    time_t systime;                                // solutions of the three runs will be chosen as the final solution
+    time(&systime);
+    srand((unsigned int)systime);
+    double  alpha = 0.9;                         //alpha is used for the cooling schedule of the temperature            
+    const double e = 2.718281828;
+ 
+ 
+ 
+ 
+ 
+ 
+    double x = 10; //setting an initial value of x (state)
+ 
+    cout << "Initial State = " << x << "\t, and F(x)= " << f(x) << endl;
+ 
+    double L = f(x);
+ 
+    for (double T = 80; T > 0.00008; T *= alpha) //T = T * alpha which used as a cooling schedule 
+    {
+ 
+ 
+        for (int i = 0; i<200; i++) //This loop is for the process of iteration (or searching for new states)
+        {
+            double xNew = x + ((rand() / (double)RAND_MAX) * 2 - 1);
+            double LNew = f(xNew);
+ 
+            if (LNew < L || (rand() / (double)RAND_MAX) <= pow(e, -(LNew - L) / T))
+            {
+                L = LNew;
+                x = xNew;
+            }
+        }
+ 
+ 
+    }
+ 
+    cout << "Final state = " << x << "\t, total of F(x) = " << f(x) << endl << endl;
+	*/
+		alpha := 0.98f
+		e := 2.71828182846f.toImmutable
+		newstuff := Int.random/Int.maxVal
 	}
 	
 	static Void moveStud(Student:Project? SP, Project[] projs, Project:Bool projAssign, Student:[Project:Int] rank, Bool rotate)

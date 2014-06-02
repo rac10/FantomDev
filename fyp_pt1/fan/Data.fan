@@ -130,7 +130,7 @@ const class Student
 	override Str toStr()
 	{
 		//used for debugging
-		return (this.sid.toStr + " " + this.name)
+		return ("$this.sid - $this.name")
 	}
     const Int sid
     const Str? name
@@ -159,7 +159,7 @@ const class Project
 	override Str toStr()
 	{
 		//used for debugging
-		return (this.pid.toStr + " " + this.title)
+		return ("$this.pid - $this.title")
 	}
 	
     const Int pid
@@ -190,7 +190,7 @@ const class Preference
 	override Str toStr()
 	{
 		//used for debugging
-		return (this.sid.toStr + " " + this.pid.toStr + " " + this.title)
+		return ("$this.sid, $this.pid - $this.title")
 	}
 	
     const Int sid
@@ -220,7 +220,7 @@ const class Supervisor
 	override Str toStr()
 	{
 		//used for debugging
-		return (this.supid.toStr + " " + this.name)
+		return ("$this.supid - $this.name")
 	}
     const Int supid
     const Str? name
