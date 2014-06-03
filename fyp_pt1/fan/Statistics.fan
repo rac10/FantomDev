@@ -76,9 +76,9 @@ const class Statistics
 		//echo("Minimum value obtained is: $min")
 		//echo("Max value obtained is: $max")
 		//echo("Average value is: $avg")
-		//shift := shiftProjs(Nalloc,stdList, projList, assigned, rank)
-		//rot := rotateProjs(Nalloc, stdList, projList, assigned, rank)
-		Optimise.simAnneal(objFn[1])
+		shift := shiftProjs(Nalloc,stdList, projList, assigned, rank)
+		rotate := rotateProjs(Nalloc, stdList, projList, assigned, rank)
+		Optimise.simAnneal(objFn, Nalloc, rank, shift)
 
 	}
 	
