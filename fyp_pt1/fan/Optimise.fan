@@ -43,23 +43,10 @@ class Optimise
 
 	}
 	
-	static Float R(Int a,  Int:[Project:Student] alloc) //THIS NEEDS TO PASS THE ALLOCATION
+	static Float extractObjfn(Int:[Project:Student] alloc, Student:[Project:Int] rank, Student[] students, Int index)
 	{
-		return 1f
-	}
-	
-	static Float p(Int a, Int:[Project:Student] alloc)
-	{
-		T := Int.maxVal.toFloat //some arbitrarily high value
-		num := Float.e.pow(-T*R(a, alloc))
-		return num
-	}
-	
-	static Float ps(Int k, Int:[Project:Student] alloc)
-	{
-		num := 0f
-		(0..k).each { num += it * p(it, alloc)*it  }
-		return num
+		num := Statistics.calcObjFn(rank, students, alloc)
+		return num[index].toFloat
 	}
 	
 	static Void simAnneal(Int:Int objFn, Int:[Project:Student] alloc, Student:[Project:Int] rank, [Int:[Student:Project?]]? permute, Student[] students)
@@ -84,8 +71,15 @@ class Optimise
         For SD you choose the minimum. 
         For SA you choose an element at random, biased towards lower values according to exponential based on temperature.
         */
-        R_a := objFn[1].toFloat
-		
+        sortedAlloc := Int:[Project:Student][:]
+		sortedObj := Int:Int[:]
+		tmp1 := Int[,]
+		tmp2 := Int[,]
+		objFn.each |j, i| { tmp1.add(i); tmp2.add(j) }
+		tmp2.sort |i, j| { return i <=> j  }
+		tmp2.each |j, i| { sortedObj[objFn.find { it == j }] = j }
+		echo(tmp2)
+		echo(sortedObj)
 		/*
         >How do you do this bias properly?
         
@@ -109,8 +103,16 @@ class Optimise
 		newRank := Student:[Project:Int][:]
 		newPerm := Int:[Student:Project?][:]
 		alpha := 0.98f
+		T := 32767f  //some arbitrarily high value
+        k := 2
+
+    	num := 0f
+		//ps(k)
+    	(0..k).each { num += Float.e.pow(-T*extractObjfn(alloc, rank, students, 1))  }
+		//e.pow is too large
+        
 		
-		echo(ps(4, alloc))
+
 		//P_i = (ps(i)-ps(i-1))/ps(alloc.size-1)
 		
 		echo(objFn)
