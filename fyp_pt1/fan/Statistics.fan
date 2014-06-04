@@ -78,7 +78,7 @@ const class Statistics
 		//echo("Average value is: $avg")
 		shift := shiftProjs(Nalloc,stdList, projList, assigned, rank)
 		rotate := rotateProjs(Nalloc, stdList, projList, assigned, rank)
-		Optimise.simAnneal(objFn, Nalloc, rank, shift)
+		Optimise.simAnneal(objFn, Nalloc, rank, shift, stdList)
 
 	}
 	

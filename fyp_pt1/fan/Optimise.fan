@@ -43,20 +43,26 @@ class Optimise
 
 	}
 	
-	static Float p(Int a)
+	static Float R(Int a,  Int:[Project:Student] alloc) //THIS NEEDS TO PASS THE ALLOCATION
 	{
-		num := 0f
+		return 1f
+	}
+	
+	static Float p(Int a, Int:[Project:Student] alloc)
+	{
+		T := Int.maxVal.toFloat //some arbitrarily high value
+		num := Float.e.pow(-T*R(a, alloc))
 		return num
 	}
 	
-	static Float ps(Int k)
+	static Float ps(Int k, Int:[Project:Student] alloc)
 	{
 		num := 0f
-		(0..k).each { num += it * p(2)*it  }
+		(0..k).each { num += it * p(it, alloc)*it  }
 		return num
 	}
 	
-	static Void simAnneal(Int:Int objFn, Int:[Project:Student] alloc, Student:[Project:Int] rank, [Int:[Student:Project?]]? permute)
+	static Void simAnneal(Int:Int objFn, Int:[Project:Student] alloc, Student:[Project:Int] rank, [Int:[Student:Project?]]? permute, Student[] students)
 	{
 		/*	1) Select an initial value
             2) Obtain the objective function
@@ -77,7 +83,10 @@ class Optimise
         for elements a' in A' you evaluate R(a'). These are the neighbouring values. 
         For SD you choose the minimum. 
         For SA you choose an element at random, biased towards lower values according to exponential based on temperature.
-        
+        */
+        R_a := objFn[1].toFloat
+		
+		/*
         >How do you do this bias properly?
         
         Calculate the relative probabilities if each a in A':
@@ -100,19 +109,19 @@ class Optimise
 		newRank := Student:[Project:Int][:]
 		newPerm := Int:[Student:Project?][:]
 		alpha := 0.98f
-		newstuff := Int.random/Int.maxVal
-		T := alloc.hash.toFloat
-		R_a := objFn[1].toFloat
-		p_a := Float.e.pow(-T*R_a)
-		ps_k := 0f
-		(0..10).each { ps_k += it * p_a*it }
+		
+		echo(ps(4, alloc))
 		//P_i = (ps(i)-ps(i-1))/ps(alloc.size-1)
 		
+		echo(objFn)
+		permute.each |sp, i| { echo("$i: $sp")  }
+		/*
 		for(i := 0; i < 10; i++)
 		{
 			f := Float.random * 50f
 			echo("$f.toStr")
 		}
+		*/
 		
 		/*RAND_MAX := 32767f
 		x := 10
