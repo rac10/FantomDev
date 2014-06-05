@@ -2,8 +2,10 @@
 ** It makes use of the results from the MC allocation from Statistics.fan 
 
 
+
 class Optimise
 {
+	static const Int T := Int.maxVal
 	static Void main(Str[] args)
 	{
 		/* Find best allocation using simulated annealing
@@ -49,6 +51,13 @@ class Optimise
 		return num[index].toFloat
 	}
 	
+	static Int ps(Int k, Int:[Project:Student] alloc, Student:[Project:Int] rank, [Int:[Student:Project?]]? permute, Student[] students)
+	{
+		num := 0
+		(0..k).each { num += Float.e.pow(-T*extractObjfn(alloc, rank, students, 1)) }
+		return num
+	}
+	
 	static Void simAnneal(Int:Int objFn, Int:[Project:Student] alloc, Student:[Project:Int] rank, [Int:[Student:Project?]]? permute, Student[] students)
 	{
 		/*	1) Select an initial value
@@ -71,15 +80,12 @@ class Optimise
         For SD you choose the minimum. 
         For SA you choose an element at random, biased towards lower values according to exponential based on temperature.
         */
-        sortedAlloc := Int:[Project:Student][:]
-		sortedObj := Int:Int[:]
-		tmp1 := Int[,]
-		tmp2 := Int[,]
-		objFn.each |j, i| { tmp1.add(i); tmp2.add(j) }
-		tmp2.sort |i, j| { return i <=> j  }
-		tmp2.each |j, i| { sortedObj[objFn.find { it == j }] = j }
-		echo(tmp2)
-		echo(sortedObj)
+		a := Int[,]
+		objFn.each { a.add(it) }
+		a.sort |i, j| { return i <=> j  }
+		echo(a)
+		//the below function gets the key for each of the values in the sorted array, a
+		a.each |i| { k := objFn.eachWhile |v, k| { i == v ? k : null}; echo(k) }
 		/*
         >How do you do this bias properly?
         
@@ -103,12 +109,12 @@ class Optimise
 		newRank := Student:[Project:Int][:]
 		newPerm := Int:[Student:Project?][:]
 		alpha := 0.98f
-		T := 32767f  //some arbitrarily high value
+		//T := 32767f  //some arbitrarily high value
         k := 2
 
-    	num := 0f
+    	
 		//ps(k)
-    	(0..k).each { num += Float.e.pow(-T*extractObjfn(alloc, rank, students, 1))  }
+    	
 		//e.pow is too large
         
 		
@@ -116,7 +122,7 @@ class Optimise
 		//P_i = (ps(i)-ps(i-1))/ps(alloc.size-1)
 		
 		echo(objFn)
-		permute.each |sp, i| { echo("$i: $sp")  }
+		//permute.each |sp, i| { echo("$i: $sp")  }
 		/*
 		for(i := 0; i < 10; i++)
 		{
@@ -125,16 +131,29 @@ class Optimise
 		}
 		*/
 		
-		/*RAND_MAX := 32767f
+		RAND_MAX := 32767f
 		x := 10
-		L := objFn
+		L := objFn[1]
+		i := 1
+		//need to easily use ps() syntax..
+		a_i := (ps(i, alloc, rank, permute, students) - ps(i-1, alloc, rank, permute, students))/ps(alloc.size-1, alloc, rank, permute, students)
+		n := 0
+		e := 0
+		while(n < Int.maxVal && e > Int.maxVal)
+		{
+			//need to redo this probably
+			
+		}
+		
 		for (T := 80f; T > 0.00008f; T *= alpha) //T = T * alpha which used as a cooling schedule 
         {
-            for (i := 0; i<200; i++) //This loop is for the process of iteration (or searching for new states)
+			num := 0f
+            for (j := 0; j<200; j++) //This loop is for the process of iteration (or searching for new states)
             {
                 xNew := x.toFloat + (Float.random * 2f - 1f)
                 LNew := xNew.pow(4f) + 4/3*xNew.pow(3f) - 4 * xNew.pow(2f) + 5
-     
+				(0..k).each { num += Float.e.pow(-T*extractObjfn(alloc, rank, students, 1)) }
+				
                 if (LNew < L.toFloat || Float.random <= Float.e.pow(-(LNew-L)/T))
                 {
                     L = LNew.toInt;
@@ -145,6 +164,6 @@ class Optimise
      
         }
 		
-		echo("Final state = $x, total of F(x) = $L")*/
+		echo("Final state = $x, total of F(x) = $L")
 	}
 }
