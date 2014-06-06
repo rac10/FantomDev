@@ -51,9 +51,9 @@ class Optimise
 		return num[index].toFloat
 	}
 	
-	static Int ps(Int k, Int:[Project:Student] alloc, Student:[Project:Int] rank, [Int:[Student:Project?]]? permute, Student[] students)
+	static Float ps(Int k, Int:[Project:Student] alloc, Student:[Project:Int] rank, [Int:[Student:Project?]]? permute, Student[] students)
 	{
-		num := 0
+		num := 0f
 		(0..k).each { num += Float.e.pow(-T*extractObjfn(alloc, rank, students, 1)) }
 		return num
 	}

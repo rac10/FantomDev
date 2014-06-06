@@ -316,14 +316,47 @@ const class Statistics
 		return sum
 	}
 	
-	static Void moveStud(Student:Project? SP, Project[] projs, Project:Bool projAssign, Student:[Project:Int] rank, Bool rotate)
+	static Void moveStud(Student:Project? SP, Project:Student PS, Project[] projs, Project:Bool projAssign, Student:[Project:Int] rank, Int mode)
 	{
 		//move each student to another project
 		//last student is given an arbitrary project in his preferences (if assignable)
 		//if no project preference is available, student is not given a project
+		
+		//maybe do this recursively
+		//scan through list of allocated students
+		//for each possible student S1, for each project in the prefs of S1,
+		//if S1 is not allocated to project P2 whilst P2 is already allocated to S2,
+		//allocate S1 to P2. do this recursively.
+		newStudProj := Student:Project?[:]
+		
+		switch (mode)
+		{
+			//shift
+			case 1:
+				echo("Shift")
+				SP.each |p, s| 
+				{   
+					if(PS[p] == s)
+						return
+				}
+			//add
+			case 2:
+				echo("Add")
+			//delete
+			case 3:
+				echo("Delete")
+			//rotate
+			case 4:
+				echo("Rotate")
+			default:
+				echo("Invalid selection")
+				
+		}
+		
+		/*
 		newStud := Student[,]
 		newProj := Project?[,]
-		newStudProj := Student:Project?[:]
+		
 		remProj := Project?[,]
 		SP.each |p, s| 
 		{  
@@ -332,6 +365,8 @@ const class Statistics
 		}
 		projs.each { remProj.add(it) }
 		remProj.removeAll(newProj)
+		
+		
 		newStud.each |s, i| 
 		{ 
 			if(!rotate)
@@ -365,18 +400,18 @@ const class Statistics
 					newStudProj[s] = newProj[i+1]
                 else newStudProj[s] = newProj.first
 			}
-		}
+		}*/
 		SP.clear
 		SP.addAll(newStudProj)	
 	}
 
 	
-	static Int:[Student:Project?] shiftProjs(Int:[Project:Student] rankList, Student[] students, Project[] projects, Int:[Project:Bool] projAssign, Student:[Project:Int] rank)
+	static Int:[Student:Project?] shiftProjs(Int:[Project:Student] psList, Student[] students, Project[] projects, Int:[Project:Bool] projAssign, Student:[Project:Int] rank)
 	{
 		newRank := Int:[Student:Project?][:]
 		resRank := Student:Project?[:]
-		(1..rankList.size).each { newRank[it] = [:] }
-		rankList.each |ps, i|
+		(1..psList.size).each { newRank[it] = [:] }
+		psList.each |ps, i|
 		{
 			if(newRank[i].isEmpty)
 				students.each { newRank[i][it] = null }
@@ -384,17 +419,17 @@ const class Statistics
 			ps.each |Student s, Project p| { newRank[i][s] = p }
 		}
 
-		(1..newRank.size).each { moveStud(newRank[it], projects.toImmutable, projAssign[it], rank, false) }
+		//(1..newRank.size).each { moveStud(newRank[it], psList[it], projects.toImmutable, projAssign[it], rank, false) }
 		
 		return newRank
 	}
 
-	static Int:[Student:Project?] rotateProjs(Int:[Project:Student] rankList, Student[] students, Project[] projects, Int:[Project:Bool] projAssign, Student:[Project:Int] rank)
+	static Int:[Student:Project?] rotateProjs(Int:[Project:Student] psList, Student[] students, Project[] projects, Int:[Project:Bool] projAssign, Student:[Project:Int] rank)
 	{
 		newRank := Int:[Student:Project?][:]
 		resRank := Student:Project?[:]
-		(1..rankList.size).each { newRank[it] = [:] }
-		rankList.each |ps, i|
+		(1..psList.size).each { newRank[it] = [:] }
+		psList.each |ps, i|
 		{
 			if(newRank[i].isEmpty)
 				students.each { newRank[i][it] = null }
@@ -403,7 +438,7 @@ const class Statistics
 		}
 		
 		
-		(1..newRank.size).each { moveStud(newRank[it], projects.toImmutable, projAssign[it], rank, true) }
+		//(1..newRank.size).each { moveStud(newRank[it], psList[it], projects.toImmutable, projAssign[it], rank, true) }
 		
 		return newRank
 	}
