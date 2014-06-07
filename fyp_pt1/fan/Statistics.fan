@@ -78,7 +78,7 @@ const class Statistics
 		//echo("Average value is: $avg")
 		shift := shiftProjs(Nalloc,stdList, projList, assigned, rank)
 		rotate := rotateProjs(Nalloc, stdList, projList, assigned, rank)
-		Optimise.simAnneal(objFn, Nalloc, rank, shift, stdList)
+		//Optimise.simAnneal(objFn, Nalloc, rank, shift, stdList)
 
 	}
 	
@@ -316,6 +316,7 @@ const class Statistics
 		return sum
 	}
 	
+	
 	static Void moveStud(Student:Project? SP, Project:Student PS, Project[] projs, Project:Bool projAssign, Student:[Project:Int] rank, Int mode)
 	{
 		//move each student to another project
@@ -327,18 +328,62 @@ const class Statistics
 		//for each possible student S1, for each project in the prefs of S1,
 		//if S1 is not allocated to project P2 whilst P2 is already allocated to S2,
 		//allocate S1 to P2. do this recursively.
-		newStudProj := Student:Project?[:]
-		
+		newStudProj := Student:Project?[:]		
+		supCount := Supervisor:Int[:]
+		//echo(SP.vals)
+		i := 0
+		//randomly chooses a project and student. it is overwritten anyway.
+		prevPr := projs.random
+		prevSt := SP.eachWhile |p, s| { return s  }
 		switch (mode)
 		{
 			//shift
 			case 1:
 				echo("Shift")
 				SP.each |p, s| 
-				{   
-					if(PS[p] == s)
-						return
+				{
+					PS.each |v, k| 
+					{   
+						//assigns previous student to the current project
+						if(rank[prevSt][k] != -1 && k != p)
+						{
+							newStudProj[prevSt] = p
+						}
+						else 
+						{
+							newStudProj[s] = null
+						}
+					}
+					prevSt = s
+					prevPr = p
+					/*
+					if(i == 0)
+					{
+						newStudProj[s] = null
+						st = s
+					}
+					else
+					{
+						newStudProj[s] = pr
+					}
+					pr = p
+					
+					if(p != null && rank[s][p] != -1)
+					{
+						newStudProj[s] = p
+						echo("$s: $k")
+					}
+					else echo("$s: Null project")	*/			
+					
+				i++
 				}
+				/*
+				if(i == SP.size) //finished the iteration
+				{
+					if(pr != null && rank[st][pr] != -1)
+						newStudProj[st] = pr
+				}
+					*/
 			//add
 			case 2:
 				echo("Add")
@@ -352,11 +397,10 @@ const class Statistics
 				echo("Invalid selection")
 				
 		}
-		
+
 		/*
 		newStud := Student[,]
 		newProj := Project?[,]
-		
 		remProj := Project?[,]
 		SP.each |p, s| 
 		{  
@@ -406,21 +450,22 @@ const class Statistics
 	}
 
 	
-	static Int:[Student:Project?] shiftProjs(Int:[Project:Student] psList, Student[] students, Project[] projects, Int:[Project:Bool] projAssign, Student:[Project:Int] rank)
+	static Int:[Student:Project?] shiftProjs(Int:[Project:Student] psMap, Student[] students, Project[] projects, Int:[Project:Bool] projAssign, Student:[Project:Int] rank)
 	{
 		newRank := Int:[Student:Project?][:]
 		resRank := Student:Project?[:]
-		(1..psList.size).each { newRank[it] = [:] }
-		psList.each |ps, i|
+		(1..psMap.size).each { newRank[it] = [:] }
+		psMap.each |ps, i|
 		{
 			if(newRank[i].isEmpty)
 				students.each { newRank[i][it] = null }
 			
 			ps.each |Student s, Project p| { newRank[i][s] = p }
 		}
-
-		//(1..newRank.size).each { moveStud(newRank[it], psList[it], projects.toImmutable, projAssign[it], rank, false) }
-		
+		echo(newRank[1])
+		moveStud(newRank[1], psMap[1], projects.toImmutable, projAssign[1], rank, 1)
+		//(1..newRank.size).each { moveStud(newRank[it], psList[it], projects.toImmutable, projAssign[it], rank, 1) }
+		echo(newRank[1])
 		return newRank
 	}
 
