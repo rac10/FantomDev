@@ -330,8 +330,23 @@ const class Statistics
 		//allocate S1 to P2. do this recursively.
 		newStudProj := Student:Project?[:]		
 		supCount := Supervisor:Int[:]
+		newStud := Student[,]
+		newProj := Project?[,]
+		remProj := Project?[,]
+		SP.each |p, s| 
+		{  
+			newStud.add(s)
+			newProj.add(p)
+		}
+		projs.each { remProj.add(it) }
+		remProj.removeAll(newProj)
+		arr := Int[,]
+		newProj.each |s, i| { arr.add(i) }
+		arr.add(SP.size)
+		echo(arr)
 		//echo(SP.vals)
-		i := 0
+		i := 1
+		j := 0
 		//randomly chooses a project and student. it is overwritten anyway.
 		prevPr := projs.random
 		prevSt := SP.eachWhile |p, s| { return s  }
@@ -340,6 +355,37 @@ const class Statistics
 			//shift
 			case 1:
 				echo("Shift")
+    			try
+    			{
+    				while(i < newProj.size)
+    				{
+    					arr[i]--
+    					j = i%2 * arr[i]
+    					//swap(SP[j], SP[i]
+						if(newProj[i] != null && newProj[j] != null && rank[newStud[i]][newProj[j]] != -1)
+						{
+							
+							newProj.swap(i, j)
+							newStudProj[newStud[i]] = newProj[i]
+							echo(newStudProj)
+						}
+    					//echo(newStud)
+						
+    					i = 1
+    					
+    					while(arr[i] == 0)
+    					{
+    						arr[i] = i
+    						i++
+        				}
+    					
+    				}
+    			
+    			}
+    			catch(Err e)
+    				echo(e.msg)
+				
+			/*
 				SP.each |p, s| 
 				{
 					PS.each |v, k| 
@@ -356,7 +402,7 @@ const class Statistics
 					}
 					prevSt = s
 					prevPr = p
-					/*
+					
 					if(i == 0)
 					{
 						newStudProj[s] = null
@@ -373,17 +419,18 @@ const class Statistics
 						newStudProj[s] = p
 						echo("$s: $k")
 					}
-					else echo("$s: Null project")	*/			
+					else echo("$s: Null project")				
 					
 				i++
 				}
-				/*
+				
 				if(i == SP.size) //finished the iteration
 				{
 					if(pr != null && rank[st][pr] != -1)
 						newStudProj[st] = pr
 				}
-					*/
+					
+			*/
 			//add
 			case 2:
 				echo("Add")
