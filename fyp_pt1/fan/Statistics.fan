@@ -328,25 +328,20 @@ const class Statistics
 		//for each possible student S1, for each project in the prefs of S1,
 		//if S1 is not allocated to project P2 whilst P2 is already allocated to S2,
 		//allocate S1 to P2. do this recursively.
-		newStudProj := Student:Project?[:]		
+		newStudProj := Student:Project?[:]
 		supCount := Supervisor:Int[:]
-		newStud := Student[,]
 		newProj := Project?[,]
 		remProj := Project?[,]
 		SP.each |p, s| 
 		{  
-			newStud.add(s)
 			newProj.add(p)
 		}
 		projs.each { remProj.add(it) }
 		remProj.removeAll(newProj)
 		arr := Int[,]
-		newProj.each |s, i| { arr.add(i) }
-		arr.add(SP.size)
-		echo(arr)
+		(0..newProj.size).each { arr.add(it) }
 		//echo(SP.vals)
-		i := 1
-		j := 0
+		
 		//randomly chooses a project and student. it is overwritten anyway.
 		prevPr := projs.random
 		prevSt := SP.eachWhile |p, s| { return s  }
@@ -354,36 +349,48 @@ const class Statistics
 		{
 			//shift
 			case 1:
-				echo("Shift")
+				echo("--------------------Shift--------------------")
     			try
     			{
-    				while(i < newProj.size)
-    				{
-    					arr[i]--
-    					j = i%2 * arr[i]
-    					//swap(SP[j], SP[i]
-						if(newProj[i] != null && newProj[j] != null && rank[newStud[i]][newProj[j]] != -1)
-						{
-							
-							newProj.swap(i, j)
-							newStudProj[newStud[i]] = newProj[i]
-							echo(newStudProj)
-						}
-    					//echo(newStud)
-						
-    					i = 1
-    					
-    					while(arr[i] == 0)
-    					{
-    						arr[i] = i
-    						i++
+					swapOK := true
+					while(swapOK)
+					{
+    					i := 1
+        				while(i < newProj.size)
+        				{
+        					arr[i]--
+        					j := i%2 * arr[i]		//0 if even, arr[i] if odd
+        					//swap(SP[j], SP[i]
+    						newProj.swap(i, j)
+    						if(newProj[i] != null && rank[PS[newProj[i]]][newProj[i]] != -1)
+    						{
+    							newStudProj[PS[newProj[i]]] = newProj[i]
+    							echo(newStudProj)
+    						}
+							else swapOK = false 	//abandon the permutation
+    						
+        					i = 1
+        					
+        					while(arr[i] == 0)
+        					{
+        						arr[i] = i
+        						i++
+            				}
+        					
         				}
-    					
-    				}
-    			
+						/*
+    					if(i == newProj.size)
+    					{
+    						prj := remProj.random
+    						if(rank[PS[prj]][prj] != -1)
+    							newStudProj[PS[prj]] = prj
+    					}
+    					*/
+    						
+					}
     			}
     			catch(Err e)
-    				echo(e.msg)
+    				echo("$e.cause, $e.msg")
 				
 			/*
 				SP.each |p, s| 
@@ -501,7 +508,7 @@ const class Statistics
 	{
 		newRank := Int:[Student:Project?][:]
 		resRank := Student:Project?[:]
-		(1..psMap.size).each { newRank[it] = [:] }
+		(1..psMap.size).each { newRank[it] = [:]}
 		psMap.each |ps, i|
 		{
 			if(newRank[i].isEmpty)
