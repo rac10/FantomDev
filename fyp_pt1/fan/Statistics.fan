@@ -316,6 +316,19 @@ const class Statistics
 		return sum
 	}
 	
+	static Bool validPerm(Student:Project? SP, Project[] newP, Student:[Project:Int] rank)
+	{
+		valid := true
+		i := 0
+		SP.each |p, s| 
+		{ 
+			if(rank[s][newP[i]] == -1) 
+				valid = false
+			i++ 	
+		}
+		return valid
+	}
+	
 	
 	static Void moveStud(Student:Project? SP, Project:Student PS, Project[] projs, Project:Bool projAssign, Student:[Project:Int] rank, Int mode)
 	{
@@ -327,21 +340,19 @@ const class Statistics
 		//scan through list of allocated students
 		//for each possible student S1, for each project in the prefs of S1,
 		//if S1 is not allocated to project P2 whilst P2 is already allocated to S2,
-		//allocate S1 to P2. do this recursively.
+		//allocate S1 to P2. do this iteratively.
 		newStudProj := Student:Project?[:]
 		supCount := Supervisor:Int[:]
-		newProj := Project?[,]
-		remProj := Project?[,]
-		SP.each |p, s| 
-		{  
-			newProj.add(p)
-		}
-		projs.each { remProj.add(it) }
-		remProj.removeAll(newProj)
+//		newProj := Project?[,]
+//		remProj := Project?[,]
+//		SP.each |p, s| 
+//		{  
+//			newProj.add(p)
+//		}
+//		projs.each { remProj.add(it) }
+//		remProj.removeAll(newProj)
 		arr := Int[,]
-		(0..newProj.size).each { arr.add(it) }
-		//echo(SP.vals)
-		
+		(0..SP.size).each { arr.add(it) }
 		//randomly chooses a project and student. it is overwritten anyway.
 		prevPr := projs.random
 		prevSt := SP.eachWhile |p, s| { return s  }
@@ -352,16 +363,46 @@ const class Statistics
 				echo("--------------------Shift--------------------")
     			try
     			{
-					(0..<SP.size-1).each 
-					{   
-						newStudProj.add(SP.keys[it],SP.vals[it+1])
-					}
-					newStudProj.add(SP.keys[SP.size-1], SP.vals[0])
+					rank.each |r, s| { echo("$s: $r")  }
+					count := 0
+					swapOK := true
+					i := 0
+					j := 1
+					k := 0
+					newSP := SP.vals
+					//while(swapOK)
+					//{
+    					while (j<SP.size) 
+    					{
+							arr[j]--
+							k = j%2 * arr[j]
+							newSP.swap(j, k) //swaps two projects around.
+							if(validPerm(SP, newSP, rank))
+								echo("Permutation ${++count}: $newSP")
+							else echo("Permutation ${++count}: not valid")
+							j = 1
+							
+							while(arr[j] == 0)
+							{
+								arr[j] = j
+								j++
+							}
+							
+//							echo(SP)
+//    						s := SP.keys[i]
+//    						p := SP.vals[i+1]
+//							if(p != null && rank[s][p] != -1)
+//								newStudProj.add(s, p)
+//							else swapOK = false		//abort this permutation, try sometihng else
+//							i++
+							
+    					}
+    					//newStudProj.add(SP.keys[SP.size-1], SP.vals[0])
+					
+					//}
 					/*
     			
-					swapOK := true
-					while(swapOK)
-					{
+					
     					i := 1
         				while(i < newProj.size)
         				{
@@ -448,13 +489,23 @@ const class Statistics
 			*/
 			//add
 			case 2:
-				echo("Add")
+				echo("--------------------Add--------------------")
 			//delete
 			case 3:
-				echo("Delete")
+				echo("--------------------Delete--------------------")
 			//rotate
 			case 4:
-				echo("Rotate")
+				echo("--------------------Rotate--------------------")
+    			try
+    			{
+					(0..<SP.size-1).each 
+					{   
+						newStudProj.add(SP.keys[it],SP.vals[it+1])
+					}
+					newStudProj.add(SP.keys[SP.size-1], SP.vals[0])
+    			}
+    			catch(Err e)
+    				echo("$e.cause, $e.msg")
 			default:
 				echo("Invalid selection")
 				
