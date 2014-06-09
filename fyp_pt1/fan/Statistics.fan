@@ -352,6 +352,13 @@ const class Statistics
 				echo("--------------------Shift--------------------")
     			try
     			{
+					(0..<SP.size-1).each 
+					{   
+						newStudProj.add(SP.keys[it],SP.vals[it+1])
+					}
+					newStudProj.add(SP.keys[SP.size-1], SP.vals[0])
+					/*
+    			
 					swapOK := true
 					while(swapOK)
 					{
@@ -361,14 +368,14 @@ const class Statistics
         					arr[i]--
         					j := i%2 * arr[i]		//0 if even, arr[i] if odd
         					//swap(SP[j], SP[i]
+							
     						newProj.swap(i, j)
     						if(newProj[i] != null && rank[PS[newProj[i]]][newProj[i]] != -1)
     						{
     							newStudProj[PS[newProj[i]]] = newProj[i]
-    							echo(newStudProj)
     						}
 							else swapOK = false 	//abandon the permutation
-    						
+    						swapOK = false
         					i = 1
         					
         					while(arr[i] == 0)
@@ -378,16 +385,17 @@ const class Statistics
             				}
         					
         				}
-						/*
+						
     					if(i == newProj.size)
     					{
     						prj := remProj.random
     						if(rank[PS[prj]][prj] != -1)
     							newStudProj[PS[prj]] = prj
     					}
-    					*/
+    					
     						
 					}
+					*/
     			}
     			catch(Err e)
     				echo("$e.cause, $e.msg")
