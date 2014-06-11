@@ -331,6 +331,7 @@ const class Statistics
 	static Void moveStud(Student:Project? SP, Project:Student PS, Project[] projs, Student:[Project:Int] rank, Int mode)
 	{
 		newStudProj := Student:Project?[:]
+		remProj := Project?[,]
 		echo(rank)
 		//--------------------Shift--------------------
 		//Shifts all projects forward by one student
@@ -338,16 +339,16 @@ const class Statistics
 		{
 			if(newStudProj.isEmpty)
 			{
-				
 				i := 1
-				
 				while((i < SP.size-1) && !validShift(SP.keys[0], SP.vals[i], rank)) { ++i }
 				
 				if(i < SP.size-1)
+				{
 					(0..<SP.size-1).each {newStudProj.add(SP.keys[it%SP.size],SP.vals[(it+i)%SP.size]) }
+					projs.each |p| { if(newStudProj.vals.find { p == it } == null) remProj.add(p)}
+				}
 				else echo("Couldn't find a suitable shift for ${SP.keys[0]}")
     			//(0..<SP.size-1).each { newStudProj.add(SP.keys[it],SP.vals[it+i]) }
-				
 			}
 			else
 			{	
@@ -378,10 +379,6 @@ const class Statistics
     					//remProj is then iterated through and a project is checked to see if it can be added to the student
     					//If it can be added to the student, it is added then removed from the remProj list
     					//Otherwise, a null project is assigned meaning the add was invalid
-    					remProj := Project?[,]
-    					projs.each { remProj.add(it) }
-    					remProj.removeAll(PS.keys)
-    					remProj.add(SP.vals[0])
     					assigned := false
     					if(newStudProj.containsKey(SP.keys[SP.size-1]))
     					{
@@ -461,10 +458,12 @@ const class Statistics
     				echo("Invalid selection")
     				
     		}
-    	}
+    	
+			SP.clear
+			SP.addAll(newStudProj)	
+		}
 			
-		SP.clear
-		SP.addAll(newStudProj)	
+		
 	}
 	
 	static Int:[Int:[Student:Project?]] manipProjs(Int:[Project:Student] psMap, Student[] students, Project[] projects, Student:[Project:Int] rank)
