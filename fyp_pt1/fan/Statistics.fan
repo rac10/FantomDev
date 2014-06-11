@@ -330,186 +330,128 @@ const class Statistics
 	}
 	
 	
-	static Void moveStud(Student:Project? SP, Project:Student PS, Project[] projs, Project:Bool projAssign, Student:[Project:Int] rank, Int mode, Int N)
+	static Void moveStud(Student:Project? SP, Project:Student PS, Project[] projs, Student:[Project:Int] rank, Int mode, Int N)
 	{
-		//move each student to another project
-		//last student is given an arbitrary project in his preferences (if assignable)
-		//if no project preference is available, student is not given a project
-		
-		//maybe do this recursively
-		//scan through list of allocated students
-		//for each possible student S1, for each project in the prefs of S1,
-		//if S1 is not allocated to project P2 whilst P2 is already allocated to S2,
-		//allocate S1 to P2. do this iteratively.
 		newStudProj := Student:Project?[:]
-		supCount := Supervisor:Int[:]
-//		newProj := Project?[,]
-//		remProj := Project?[,]
-//		SP.each |p, s| 
-//		{  
-//			newProj.add(p)
-//		}
-//		projs.each { remProj.add(it) }
-//		remProj.removeAll(newProj)
-		arr := Int[,]
-		(0..SP.size).each { arr.add(it) }
-		//randomly chooses a project and student. it is overwritten anyway.
-		prevPr := projs.random
-		prevSt := SP.eachWhile |p, s| { return s  }
-		switch (mode)
-		{
-			//shift
-			case 1:
-				echo("--------------------Shift--------------------")
-    			try
-    			{
-					rank.each |r, s| { echo("$s: $r")  }
-					count := 0
-					swapOK := true
-					i := 0
-					j := 1
-					k := 0
-					newSP := SP.vals
-					//while(swapOK)
-					//{
-    					while (j<SP.size) 
-    					{
-							arr[j]--
-							k = j%2 * arr[j]
-							newSP.swap(j, k) //swaps two projects around.
-							if(validPerm(SP, newSP, rank))
-								echo("Permutation ${++count}: $newSP")
-							else echo("Permutation ${++count}: not valid")
-							j = 1
-							
-							while(arr[j] == 0)
-							{
-								arr[j] = j
-								j++
-							}
-							
-//							echo(SP)
-//    						s := SP.keys[i]
-//    						p := SP.vals[i+1]
-//							if(p != null && rank[s][p] != -1)
-//								newStudProj.add(s, p)
-//							else swapOK = false		//abort this permutation, try sometihng else
-//							i++
-							
-    					}
-    					//newStudProj.add(SP.keys[SP.size-1], SP.vals[0])
-					
-					//}
-					/*
-    			
-					
-    					i := 1
-        				while(i < newProj.size)
-        				{
-        					arr[i]--
-        					j := i%2 * arr[i]		//0 if even, arr[i] if odd
-        					//swap(SP[j], SP[i]
-							
-    						newProj.swap(i, j)
-    						if(newProj[i] != null && rank[PS[newProj[i]]][newProj[i]] != -1)
-    						{
-    							newStudProj[PS[newProj[i]]] = newProj[i]
-    						}
-							else swapOK = false 	//abandon the permutation
-    						swapOK = false
-        					i = 1
-        					
-        					while(arr[i] == 0)
-        					{
-        						arr[i] = i
-        						i++
-            				}
-        					
-        				}
-						
-    					if(i == newProj.size)
-    					{
-    						prj := remProj.random
-    						if(rank[PS[prj]][prj] != -1)
-    							newStudProj[PS[prj]] = prj
-    					}
-    					
-    						
-					}
-					*/
-    			}
-    			catch(Err e)
-    				echo("$e.cause, $e.msg")
-				
-			/*
-				SP.each |p, s| 
-				{
-					PS.each |v, k| 
-					{   
-						//assigns previous student to the current project
-						if(rank[prevSt][k] != -1 && k != p)
-						{
-							newStudProj[prevSt] = p
-						}
-						else 
-						{
-							newStudProj[s] = null
-						}
-					}
-					prevSt = s
-					prevPr = p
-					
-					if(i == 0)
-					{
-						newStudProj[s] = null
-						st = s
-					}
-					else
-					{
-						newStudProj[s] = pr
-					}
-					pr = p
-					
-					if(p != null && rank[s][p] != -1)
-					{
-						newStudProj[s] = p
-						echo("$s: $k")
-					}
-					else echo("$s: Null project")				
-					
-				i++
-				}
-				
-				if(i == SP.size) //finished the iteration
-				{
-					if(pr != null && rank[st][pr] != -1)
-						newStudProj[st] = pr
-				}
-					
-			*/
-			//add
-			case 2:
-				echo("--------------------Add--------------------")
-			//delete
-			case 3:
-				echo("--------------------Delete--------------------")
-			//rotate
-			case 4:
-				echo("--------------------Rotate--------------------")
-    			try
-    			{
 
-    					(0..<SP.size-N).each { newStudProj.add(SP.keys[it],SP.vals[it+N]) }
-    					(SP.size-N..<SP.size).each { newStudProj.add(SP.keys[it], SP.vals[it-SP.size+N]) }
-					
-					
-    			}
-    			catch(Err e)
-    				echo("$e.cause, $e.msg")
-			default:
-				echo("Invalid selection")
-				
+		//Shifts all the projects forward by 1 student
+		while (N != 0)
+		{
+    		switch (mode)
+    		{
+    			//shift
+    			case 1:
+    				//Shifts all projects forward by one student
+        			echo("--------------------Shift--------------------")
+            		try
+            		{
+            			(0..<SP.size-1).each { newStudProj.add(SP.keys[it],SP.vals[it+1]) }
+            		}
+            		catch(Err e)
+            		{
+            			echo("$e.cause, $e.msg")
+            		}
+            		N--
+            		mode = 4
+    			//add
+    			case 2:
+    				//Adds a project to the last student shifted
+    				//Only valid preferences can be added.
+    				echo("--------------------Add--------------------")
+    				try
+        			{
+    					//Create a list called remProj to account for only addable projects
+    					//It produces a deep-copy of projs and uses .removeAll to eliminate projects in common
+						//It also adds the project of the first student (since it has been shifted out) afterwards
+    					//remProj is then iterated through and a project is checked to see if it can be added to the student
+						//If it can be added to the student, it is added then removed from the remProj list
+						//Otherwise, a null project is assigned meaning the add was invalid
+    					remProj := Project?[,]
+    					projs.each { remProj.add(it) }
+    					remProj.removeAll(PS.keys)
+    					remProj.add(SP.vals[0])
+    					assigned := false
+						if(newStudProj.containsKey(SP.keys[SP.size-1]))
+						{
+							//"add" project only if the last student is null
+							if(newStudProj[SP.keys[SP.size-1]] == null)
+							{
+								remProj.each 
+            					{ 
+            						if(it != null && !assigned && rank[SP.keys[SP.size-1]][it] != -1)
+            						{
+            							newStudProj[SP.keys[SP.size-1]] = it
+            							remProj.remove(it)
+            							assigned = true
+            						}
+            					}
+							}
+						}
+						else
+						{
+        					remProj.each 
+        					{ 
+        						if(it != null && !assigned && rank[SP.keys[SP.size-1]][it] != -1)
+        						{
+        							newStudProj.add(SP.keys[SP.size-1], it)
+        							remProj.remove(it)
+        							assigned = true
+        						}
+        					}
+        					
+        					if(!assigned)
+        						newStudProj.add(SP.keys[SP.size-1], null)
+						}
+    					N--
+    
+        			}
+        			catch(Err e)
+        				echo("$e.cause, $e.msg")
+    			//delete
+    			case 3:
+    				//Removes a project from the last student shifted
+    				//Simply nulls the final student
+    				echo("--------------------Delete--------------------")
+    				try
+        			{
+        				newStudProj.add(SP.keys[SP.size-1], null)
+    					N--
+        			}
+        			catch(Err e)
+        				echo("$e.cause, $e.msg")
+    			//rotate
+    			case 4:
+    				//Ensures that the last student is given the first student's project
+    				//Keeps project consistency throughout
+    				echo("--------------------Rotate--------------------")
+    				try
+        			{
+        				if(newStudProj.containsKey(SP.keys[SP.size-1]))
+						{
+							//newStudProj is filled. need special rotate case
+							//use a temporary variable, populate it then repopulate newStudProj with those values
+        					tmp := Student:Project?[:]
+							(0..<SP.size-1).each { tmp.add(newStudProj.keys[it], newStudProj.vals[it+1])}
+							tmp.add(newStudProj.keys[SP.size-1], newStudProj.vals[0])
+							newStudProj.clear
+							newStudProj.addAll(tmp)
+							
+						}
+						else
+        					newStudProj.add(SP.keys[SP.size-1], SP.vals[0])
+    					N--
+						mode = 2
+        			}
+        			catch(Err e)
+        				echo("$e.cause, $e.msg")
+        			
+    			default:
+    				echo("Invalid selection")
+    				
+    		}
+			
 		}
+		
 
 		/*
 		newStud := Student[,]
@@ -576,7 +518,7 @@ const class Statistics
 			ps.each |Student s, Project p| { newRank[i][s] = p }
 		}
 		echo(newRank[1])
-		moveStud(newRank[1], psMap[1], projects.toImmutable, projAssign[1], rank, 4, 2)
+		moveStud(newRank[1], psMap[1], projects.toImmutable, rank, 1, 3)
 		//(1..newRank.size).each { moveStud(newRank[it], psList[it], projects.toImmutable, projAssign[it], rank, 1) }
 		echo(newRank[1])
 		return newRank
