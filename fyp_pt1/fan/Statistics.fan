@@ -76,10 +76,10 @@ const class Statistics
 		//echo("Minimum value obtained is: $min")
 		//echo("Max value obtained is: $max")
 		//echo("Average value is: $avg")
-//		add := addProjs(Nalloc,stdList, projList, rank)
+		add := addProjs(Nalloc,stdList, projList, rank)
 //		del := delProjs(Nalloc,stdList, projList, rank)
 //		rotate := rotateProjs(Nalloc, stdList, projList, rank)
-		manip := manipProjs(Nalloc, stdList, projList, rank)
+		//manip := manipProjs(Nalloc, stdList, projList, rank)
 		
 		//Optimise.simAnneal(objFn, Nalloc, rank, shift, stdList)
 
@@ -319,16 +319,11 @@ const class Statistics
 		return sum
 	}
 	
-	static Bool validPerm(Student:Project? SP, Project[] newP, Student:[Project:Int] rank)
+	static Bool validShift(Student st, Project? pr, Student:[Project:Int] rank)
 	{
 		valid := true
-		i := 0
-		SP.each |p, s| 
-		{ 
-			if(rank[s][newP[i]] == -1) 
-				valid = false
-			i++ 	
-		}
+		if(pr == null || rank[st][pr] == -1) 
+			valid = false 
 		return valid
 	}
 	
@@ -336,19 +331,28 @@ const class Statistics
 	static Void moveStud(Student:Project? SP, Project:Student PS, Project[] projs, Student:[Project:Int] rank, Int mode)
 	{
 		newStudProj := Student:Project?[:]
-		
+		echo(rank)
 		//--------------------Shift--------------------
 		//Shifts all projects forward by one student
 		try
 		{
 			if(newStudProj.isEmpty)
 			{
-				(0..<SP.size-1).each { newStudProj.add(SP.keys[it],SP.vals[it+1]) }
+				
+				i := 1
+				
+				while((i < SP.size-1) && !validShift(SP.keys[0], SP.vals[i], rank)) { ++i }
+				
+				if(i < SP.size-1)
+					(0..<SP.size-1).each {newStudProj.add(SP.keys[it%SP.size],SP.vals[(it+i)%SP.size]) }
+				else echo("Couldn't find a suitable shift for ${SP.keys[0]}")
+    			//(0..<SP.size-1).each { newStudProj.add(SP.keys[it],SP.vals[it+i]) }
+				
 			}
 			else
-			{
+			{	
 				tmp := Student:Project?[:]
-				(0..<SP.size-1).each { tmp.add(newStudProj.keys[it], SP.vals[it+1]) }
+				(0..<SP.size-1).each  { tmp.add(newStudProj.keys[it], SP.vals[it+1]) }
 				newStudProj.clear
 				newStudProj.addAll(tmp)
 			}
@@ -357,104 +361,107 @@ const class Statistics
 		{
 			echo("$e.cause, $e.msg")
 		}
-
-		switch (mode)
+		
+		if(!newStudProj.isEmpty)
 		{
-			case 1:
-				//--------------------Add--------------------
-				//Adds a project to the last student shifted
-				//Only valid preferences can be added.
-				try
-    			{
-					//Create a list called remProj to account for only addable projects
-					//It produces a deep-copy of projs and uses .removeAll to eliminate projects in common
-					//It also adds the project of the first student (since it has been shifted out) afterwards
-					//remProj is then iterated through and a project is checked to see if it can be added to the student
-					//If it can be added to the student, it is added then removed from the remProj list
-					//Otherwise, a null project is assigned meaning the add was invalid
-					remProj := Project?[,]
-					projs.each { remProj.add(it) }
-					remProj.removeAll(PS.keys)
-					remProj.add(SP.vals[0])
-					assigned := false
-					if(newStudProj.containsKey(SP.keys[SP.size-1]))
-					{
-						//"add" project only if the last student is null
-						if(newStudProj[SP.keys[SP.size-1]] == null)
-						{
-							remProj.each 
+    		switch (mode)
+    		{
+    			case 1:
+    				//--------------------Add--------------------
+    				//Adds a project to the last student shifted
+    				//Only valid preferences can be added.
+    				try
+        			{
+    					//Create a list called remProj to account for only addable projects
+    					//It produces a deep-copy of projs and uses .removeAll to eliminate projects in common
+    					//It also adds the project of the first student (since it has been shifted out) afterwards
+    					//remProj is then iterated through and a project is checked to see if it can be added to the student
+    					//If it can be added to the student, it is added then removed from the remProj list
+    					//Otherwise, a null project is assigned meaning the add was invalid
+    					remProj := Project?[,]
+    					projs.each { remProj.add(it) }
+    					remProj.removeAll(PS.keys)
+    					remProj.add(SP.vals[0])
+    					assigned := false
+    					if(newStudProj.containsKey(SP.keys[SP.size-1]))
+    					{
+    						//"add" project only if the last student is null
+    						if(newStudProj[SP.keys[SP.size-1]] == null)
+    						{
+    							remProj.each 
+            					{ 
+            						if(it != null && !assigned && rank[SP.keys[SP.size-1]][it] != -1)
+            						{
+            							newStudProj[SP.keys[SP.size-1]] = it
+            							remProj.remove(it)
+            							assigned = true
+            						}
+            					}
+    						}
+    					}
+    					else
+    					{
+        					remProj.each 
         					{ 
         						if(it != null && !assigned && rank[SP.keys[SP.size-1]][it] != -1)
         						{
-        							newStudProj[SP.keys[SP.size-1]] = it
+        							newStudProj.add(SP.keys[SP.size-1], it)
         							remProj.remove(it)
         							assigned = true
         						}
         					}
-						}
-					}
-					else
-					{
-    					remProj.each 
-    					{ 
-    						if(it != null && !assigned && rank[SP.keys[SP.size-1]][it] != -1)
-    						{
-    							newStudProj.add(SP.keys[SP.size-1], it)
-    							remProj.remove(it)
-    							assigned = true
-    						}
+        					
+        					if(!assigned)
+        						newStudProj.add(SP.keys[SP.size-1], null)
+    					}    
+        			}
+        			catch(Err e)
+        				echo("$e.cause, $e.msg")
+    			case 2:
+    				//--------------------Delete--------------------
+    				//Removes a project from the last student shifted
+    				//Simply nulls the final student
+    				try
+        			{
+    					if(newStudProj.containsKey(SP.keys[SP.size-1]))
+    					{
+    						newStudProj[SP.keys[SP.size-1]] = null
     					}
-    					
-    					if(!assigned)
+    					else
+    					{
     						newStudProj.add(SP.keys[SP.size-1], null)
-					}    
-    			}
-    			catch(Err e)
-    				echo("$e.cause, $e.msg")
-			case 2:
-				//--------------------Delete--------------------
-				//Removes a project from the last student shifted
-				//Simply nulls the final student
-				try
-    			{
-					if(newStudProj.containsKey(SP.keys[SP.size-1]))
-					{
-						newStudProj[SP.keys[SP.size-1]] = null
-					}
-					else
-					{
-						newStudProj.add(SP.keys[SP.size-1], null)
-					}
-    			}
-    			catch(Err e)
-    				echo("$e.cause, $e.msg")
-			case 3:
-				//"--------------------Rotate--------------------"
-				//Ensures that the last student is given the first student's project
-				//Keeps project consistency throughout
-				try
-    			{
-    				if(newStudProj.containsKey(SP.keys[SP.size-1]))
-					{
-						//newStudProj is filled. need special rotate case
-						//use a temporary variable, populate it then repopulate newStudProj with those values
-    					tmp := Student:Project?[:]
-						(0..<SP.size-1).each { tmp.add(newStudProj.keys[it], newStudProj.vals[it+1])}
-						tmp.add(newStudProj.keys[SP.size-1], newStudProj.vals[0])
-						newStudProj.clear
-						newStudProj.addAll(tmp)
-						
-					}
-					else
-    					newStudProj.add(SP.keys[SP.size-1], SP.vals[0])
-    			}
-    			catch(Err e)
-    				echo("$e.cause, $e.msg")
-    			
-			default:
-				echo("Invalid selection")
-				
-		}
+    					}
+        			}
+        			catch(Err e)
+        				echo("$e.cause, $e.msg")
+    			case 3:
+    				//"--------------------Rotate--------------------"
+    				//Ensures that the last student is given the first student's project
+    				//Keeps project consistency throughout
+    				try
+        			{
+        				if(newStudProj.containsKey(SP.keys[SP.size-1]))
+    					{
+    						//newStudProj is filled. need special rotate case
+    						//use a temporary variable, populate it then repopulate newStudProj with those values
+        					tmp := Student:Project?[:]
+    						(0..<SP.size-1).each { tmp.add(newStudProj.keys[it], newStudProj.vals[it+1])}
+    						tmp.add(newStudProj.keys[SP.size-1], newStudProj.vals[0])
+    						newStudProj.clear
+    						newStudProj.addAll(tmp)
+    						
+    					}
+    					else
+        					newStudProj.add(SP.keys[SP.size-1], SP.vals[0])
+        			}
+        			catch(Err e)
+        				echo("$e.cause, $e.msg")
+        			
+    			default:
+    				echo("Invalid selection")
+    				
+    		}
+    	}
 			
 		SP.clear
 		SP.addAll(newStudProj)	
@@ -496,10 +503,10 @@ const class Statistics
 			
 			ps.each |Student s, Project p| { newRank[i][s] = p }
 		}
-		echo(newRank)
-		//moveStud(newRank[1], psMap[1], projects.toImmutable, rank, 1)
-		(1..newRank.size).each { moveStud(newRank[it], psMap[it], projects.toImmutable,  rank, 1) }
-		echo(newRank)
+		echo(newRank[1])
+		moveStud(newRank[1], psMap[1], projects.toImmutable, rank, 1)
+		//(1..newRank.size).each { moveStud(newRank[it], psMap[it], projects.toImmutable,  rank, 1) }
+		echo(newRank[1])
 		return newRank
 	}
 	
