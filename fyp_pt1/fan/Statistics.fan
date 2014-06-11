@@ -330,7 +330,7 @@ const class Statistics
 	}
 	
 	
-	static Void moveStud(Student:Project? SP, Project:Student PS, Project[] projs, Project:Bool projAssign, Student:[Project:Int] rank, Int mode)
+	static Void moveStud(Student:Project? SP, Project:Student PS, Project[] projs, Project:Bool projAssign, Student:[Project:Int] rank, Int mode, Int N)
 	{
 		//move each student to another project
 		//last student is given an arbitrary project in his preferences (if assignable)
@@ -498,11 +498,11 @@ const class Statistics
 				echo("--------------------Rotate--------------------")
     			try
     			{
-					(0..<SP.size-1).each 
-					{   
-						newStudProj.add(SP.keys[it],SP.vals[it+1])
-					}
-					newStudProj.add(SP.keys[SP.size-1], SP.vals[0])
+
+    					(0..<SP.size-N).each { newStudProj.add(SP.keys[it],SP.vals[it+N]) }
+    					(SP.size-N..<SP.size).each { newStudProj.add(SP.keys[it], SP.vals[it-SP.size+N]) }
+					
+					
     			}
     			catch(Err e)
     				echo("$e.cause, $e.msg")
@@ -576,7 +576,7 @@ const class Statistics
 			ps.each |Student s, Project p| { newRank[i][s] = p }
 		}
 		echo(newRank[1])
-		moveStud(newRank[1], psMap[1], projects.toImmutable, projAssign[1], rank, 1)
+		moveStud(newRank[1], psMap[1], projects.toImmutable, projAssign[1], rank, 4, 2)
 		//(1..newRank.size).each { moveStud(newRank[it], psList[it], projects.toImmutable, projAssign[it], rank, 1) }
 		echo(newRank[1])
 		return newRank
