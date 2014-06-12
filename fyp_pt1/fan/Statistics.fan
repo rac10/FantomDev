@@ -76,7 +76,7 @@ const class Statistics
 		//echo("Minimum value obtained is: $min")
 		//echo("Max value obtained is: $max")
 		//echo("Average value is: $avg")
-		add := addProjs(Nalloc,stdList, projList, rank)
+		//add := addProjs(Nalloc,stdList, projList, rank)
 //		del := delProjs(Nalloc,stdList, projList, rank)
 //		rotate := rotateProjs(Nalloc, stdList, projList, rank)
 		//manip := manipProjs(Nalloc, stdList, projList, rank)
@@ -332,7 +332,6 @@ const class Statistics
 	{
 		newStudProj := Student:Project?[:]
 		remProj := Project?[,]
-		echo(rank)
 		//--------------------Shift--------------------
 		//Shifts all projects forward by one student
 		try
@@ -366,104 +365,101 @@ const class Statistics
 		
 		if(!newStudProj.isEmpty)
 		{
-    		switch (mode)
-    		{
-    			case 1:
-    				//--------------------Add--------------------
-    				//Adds a project to the last student shifted
-    				//Only valid preferences can be added.
-    				try
-        			{
-    					//remProj is then iterated through and each project is checked to see if it can be added to the student
-    					//If it can be added to the student, it is added then removed from the remProj list
-    					//Otherwise, a null project is assigned meaning the add was invalid
-    					assigned := false
-    					if(newStudProj.containsKey(SP.keys[SP.size-1]))
-    					{
-    						//adds a project only if the last student is null
-							//uses overwrite instead of .add
-    						if(newStudProj[SP.keys[SP.size-1]] == null)
-    						{
-    							remProj.each 
-            					{ 
-            						if(it != null && !assigned && rank[SP.keys[SP.size-1]][it] != -1)
-            						{
-            							newStudProj[SP.keys[SP.size-1]] = it
-            							remProj.remove(it)
-            							assigned = true
-            						}
-            					}
-    						}
-    					}
-    					else
-    					{
-							//use .add command since student does not exist in new map yet
-        					remProj.each 
-        					{ 
-        						if(it != null && !assigned && rank[SP.keys[SP.size-1]][it] != -1)
-        						{
-        							newStudProj.add(SP.keys[SP.size-1], it)
-        							remProj.remove(it)
-        							assigned = true
-        						}
-        					}
-        					
-        					if(!assigned)
-        						newStudProj.add(SP.keys[SP.size-1], null)
-    					}    
-        			}
-        			catch(Err e)
-        				echo("$e.cause, $e.msg")
-    			case 2:
-    				//--------------------Delete--------------------
-    				//Removes a project from the last student shifted
-    				//Simply nulls the final student
-    				try
-        			{
-    					if(newStudProj.containsKey(SP.keys[SP.size-1]))
-    					{
-    						newStudProj[SP.keys[SP.size-1]] = null
-    					}
-    					else
-    					{
-    						newStudProj.add(SP.keys[SP.size-1], null)
-    					}
-        			}
-        			catch(Err e)
-        				echo("$e.cause, $e.msg")
-    			case 3:
-    				//"--------------------Rotate--------------------"
-    				//Ensures that the last student is given the first student's project
-    				//Keeps project consistency throughout
-    				try
-        			{
-        				if(newStudProj.containsKey(SP.keys[SP.size-1]))
-    					{
-    						//newStudProj is filled. need special rotate case
-    						//use a temporary variable, populate it then repopulate newStudProj with those values
-        					tmp := Student:Project?[:]
-    						(0..<SP.size-1).each { tmp.add(newStudProj.keys[it], newStudProj.vals[it+1])}
-    						tmp.add(newStudProj.keys[SP.size-1], newStudProj.vals[0])
-    						newStudProj.clear
-    						newStudProj.addAll(tmp)
-    						
-    					}
-    					else
-        					newStudProj.add(SP.keys[SP.size-1], SP.vals[0])
-        			}
-        			catch(Err e)
-        				echo("$e.cause, $e.msg")
-        			
-    			default:
-    				echo("Invalid selection")
+			switch (mode)
+			{
+				case 1:
+				//--------------------Add--------------------
+				//Adds a project to the last student shifted
+				//Only valid preferences can be added.
+				try
+				{
+					//remProj is then iterated through and each project is checked to see if it can be added to the student
+					//If it can be added to the student, it is added then removed from the remProj list
+					//Otherwise, a null project is assigned meaning the add was invalid
+					assigned := false
+					if(newStudProj.containsKey(SP.keys[SP.size-1]))
+					{
+						//adds a project only if the last student is null
+						//uses overwrite instead of .add
+						if(newStudProj[SP.keys[SP.size-1]] == null)
+						{
+							remProj.each 
+							{
+								if(it != null && !assigned && rank[SP.keys[SP.size-1]][it] != -1)
+								{
+									newStudProj[SP.keys[SP.size-1]] = it
+									remProj.remove(it)
+									assigned = true								
+								}
+							}
+						}
+					}
+					else
+					{
+						//use .add command since student does not exist in new map yet
+						remProj.each 
+						{
+							if(it != null && !assigned && rank[SP.keys[SP.size-1]][it] != -1)
+							{
+								newStudProj.add(SP.keys[SP.size-1], it)
+								remProj.remove(it)
+								assigned = true
+							}
+						}
+						if(!assigned)
+							newStudProj.add(SP.keys[SP.size-1], null)
+					}
+				}
+				catch(Err e)
+					echo("$e.cause, $e.msg")
+				case 2:
+            	//--------------------Delete--------------------
+            	//Removes a project from the last student shifted
+            	//Simply nulls the final student
+				try
+            	{
+            		if(newStudProj.containsKey(SP.keys[SP.size-1]))
+            		{
+            			newStudProj[SP.keys[SP.size-1]] = null
+            		}
+            		else
+            		{
+            			newStudProj.add(SP.keys[SP.size-1], null)
+            		}
+            	}
+            	catch(Err e)
+            		echo("$e.cause, $e.msg")
+            case 3:
+            	//"--------------------Rotate--------------------"
+            	//Ensures that the last student is given the first student's project
+            	//Keeps project consistency throughout
+            	try
+            	{
+            		if(newStudProj.containsKey(SP.keys[SP.size-1]))
+            		{
+            			//newStudProj is filled. need special rotate case
+            			//use a temporary variable, populate it then repopulate newStudProj with those values
+            			tmp := Student:Project?[:]
+            			(0..<SP.size-1).each { tmp.add(newStudProj.keys[it], newStudProj.vals[it+1])}
+            			tmp.add(newStudProj.keys[SP.size-1], newStudProj.vals[0])
+            			newStudProj.clear
+            			newStudProj.addAll(tmp)
+            			
+            		}
+            		else
+            			newStudProj.add(SP.keys[SP.size-1], SP.vals[0])
+            	}
+            	catch(Err e)
+            		echo("$e.cause, $e.msg")
+            	
+            default:
+            	echo("Invalid selection")
     				
     		}
     	
 			SP.clear
 			SP.addAll(newStudProj)	
 		}
-			
-		
 	}
 	
 	static Int:[Int:[Student:Project?]] manipProjs(Int:[Project:Student] psMap, Student[] students, Project[] projects, Student:[Project:Int] rank)
@@ -502,10 +498,10 @@ const class Statistics
 			
 			ps.each |Student s, Project p| { newRank[i][s] = p }
 		}
-		echo(newRank[1])
-		moveStud(newRank[1], psMap[1], projects.toImmutable, rank, 1)
-		//(1..newRank.size).each { moveStud(newRank[it], psMap[it], projects.toImmutable,  rank, 1) }
-		echo(newRank[1])
+		//echo(newRank[1])
+		//moveStud(newRank[1], psMap[1], projects.toImmutable, rank, 1)
+		(1..newRank.size).each { moveStud(newRank[it], psMap[it], projects.toImmutable,  rank, 1) }
+		//echo(newRank[1])
 		return newRank
 	}
 	

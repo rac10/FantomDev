@@ -47,6 +47,7 @@ class Optimise
     8) Repeat until the halting condition is met
 		*/
 		reduc := 0.4f
+		Statistics.main(["10", "10", "5"])
 		echo("Done!")
 		//simAnneal(10000)
 
@@ -55,7 +56,6 @@ class Optimise
 	static Void callMeMaybe(Int min, Int max, Int avg, Int:Int objFn, Int:[Project:Bool] assigned, Student:[Project:Int] rank, Int:[Project:Student] Nalloc, Student[] stdList, Project[] projList, Supervisor[] supList )
 	{
 		add := Statistics.addProjs(Nalloc,stdList, projList, rank)
-		echo(add)
 		steepDesc(objFn, Nalloc, rank, add, stdList)
 	}
 	
@@ -72,7 +72,7 @@ class Optimise
 		return num
 	}
 	
-	static Void simAnneal(Int:Int objFn, Int:[Project:Student] alloc, Student:[Project:Int] rank, [Int:[Student:Project?]]? permute, Student[] students)
+	static Void simAnneal(Int:Int objFn, Int:[Project:Student] alloc, Student:[Project:Int] rank, [Int:[Student:Project?]]? permute, Student[] stdList)
 	{
 		/*	1) Select an initial value
             2) Obtain the objective function
@@ -150,7 +150,7 @@ class Optimise
 		L := objFn[1]
 		i := 1
 		//need to easily use ps() syntax..
-		a_i := (ps(i, alloc, rank, permute, students) - ps(i-1, alloc, rank, permute, students))/ps(alloc.size-1, alloc, rank, permute, students)
+		a_i := (ps(i, alloc, rank, permute, stdList) - ps(i-1, alloc, rank, permute, stdList))/ps(alloc.size-1, alloc, rank, permute, stdList)
 		n := 0
 		e := 0
 		while(n < Int.maxVal && e > Int.maxVal)
@@ -166,7 +166,7 @@ class Optimise
             {
                 xNew := x.toFloat + (Float.random * 2f - 1f)
                 LNew := xNew.pow(4f) + 4/3*xNew.pow(3f) - 4 * xNew.pow(2f) + 5
-				(0..k).each { num += Float.e.pow(-T*extractObjfn(alloc, rank, students, 1)) }
+				(0..k).each { num += Float.e.pow(-T*extractObjfn(alloc, rank, stdList, 1)) }
 				
                 if (LNew < L.toFloat || Float.random <= Float.e.pow(-(LNew-L)/T))
                 {
@@ -181,8 +181,10 @@ class Optimise
 		echo("Final state = $x, total of F(x) = $L")
 	}
 	
-	static Float steepDesc(Int:Int objFn, Int:[Project:Student] Nalloc, Student:[Project:Int] rank, [Int:[Student:Project?]]? permute, Student[] stdList)
+	static Void steepDesc(Int:Int objFn, Int:[Project:Student] Nalloc, Student:[Project:Int] rank, [Int:[Student:Project?]]? permute, Student[] stdList)
 	{
+		//f = objFn
+		//f` = permute
 		Epsilon := 1E-8f
 		Alpha := 0.02f
 		p1 := Float[,]
@@ -198,15 +200,20 @@ class Optimise
 			}
 		}
 		grad := Statistics.calcObjFn(rank, stdList, perm)
-		p2 := [p1[1] - grad[1]*Alpha, p1[2] - Alpha*grad[2]]
+		echo(p1)
+		echo(grad)
+		p2 := [p1[0] - grad[1]*Alpha, p1[1] - Alpha*grad[2]]
+		d := (grad[1]-objFn[1]).toFloat.abs
 		
-		while((objFn[1]-objFn[2]).toFloat.abs > Epsilon)
+		while(d > Epsilon)
 		{
+			echo(d)
 			p1 = p2
-			//grad = (p1.derivation)
-			p2 = [p1[1] - grad[1]*Alpha, p1[2] - Alpha*grad[2]]
+			grad = Statistics.calcObjFn(rank, stdList, perm)
+			p2 = [p1[0] - grad[1]*(1-Alpha), p1[1] - Alpha*grad[2]]
+			d *= (1-Alpha)
 		}
-		
-		return 1f
+		echo("$p1, $p2")
+		//return p1
 	}
 }
