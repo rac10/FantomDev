@@ -80,7 +80,7 @@ const class Statistics
 //		del := delProjs(Nalloc,stdList, projList, rank)
 //		rotate := rotateProjs(Nalloc, stdList, projList, rank)
 		//manip := manipProjs(Nalloc, stdList, projList, rank)
-		
+		Optimise.callMeMaybe(min, max, avg, objFn, assigned, rank, Nalloc, stdList, projList, supList)
 		//Optimise.simAnneal(objFn, Nalloc, rank, shift, stdList)
 
 	}
@@ -345,6 +345,7 @@ const class Statistics
 				if(i < SP.size-1)
 				{
 					(0..<SP.size-1).each {newStudProj.add(SP.keys[it%SP.size],SP.vals[(it+i)%SP.size]) }
+					//remProj adds all the projects that have not yet been assigned to a student for usage later on
 					projs.each |p| { if(newStudProj.vals.find { p == it } == null) remProj.add(p)}
 				}
 				else echo("Couldn't find a suitable shift for ${SP.keys[0]}")
@@ -373,16 +374,14 @@ const class Statistics
     				//Only valid preferences can be added.
     				try
         			{
-    					//Create a list called remProj to account for only addable projects
-    					//It produces a deep-copy of projs and uses .removeAll to eliminate projects in common
-    					//It also adds the project of the first student (since it has been shifted out) afterwards
-    					//remProj is then iterated through and a project is checked to see if it can be added to the student
+    					//remProj is then iterated through and each project is checked to see if it can be added to the student
     					//If it can be added to the student, it is added then removed from the remProj list
     					//Otherwise, a null project is assigned meaning the add was invalid
     					assigned := false
     					if(newStudProj.containsKey(SP.keys[SP.size-1]))
     					{
-    						//"add" project only if the last student is null
+    						//adds a project only if the last student is null
+							//uses overwrite instead of .add
     						if(newStudProj[SP.keys[SP.size-1]] == null)
     						{
     							remProj.each 
@@ -398,6 +397,7 @@ const class Statistics
     					}
     					else
     					{
+							//use .add command since student does not exist in new map yet
         					remProj.each 
         					{ 
         						if(it != null && !assigned && rank[SP.keys[SP.size-1]][it] != -1)
