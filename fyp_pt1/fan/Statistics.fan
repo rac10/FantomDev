@@ -359,8 +359,11 @@ const class Statistics
 				{
 					prefs_ps[p1].each |s2|
 					{
+						if(!newStudProj.vals.contains(p3))
+						{
 						newStudProj[s2] = p1
 						newStudProj[s1] = p3
+						}
 					}
 				}
 			}
