@@ -333,6 +333,7 @@ const class Statistics
 		newStudProj := Student:Project?[:]
 		prefs_sp := Student:Project[][:]
 		prefs_ps := Project:Student[][:]
+		prefs_sp_unalloc := Student:Project[][:]
 		
 		//Populate newStudProj with SP
 		SP.each |p, s| { newStudProj[s] = p }
@@ -344,30 +345,38 @@ const class Statistics
 			prefs_sp[s] = [,]
 			pi.each |i, p| { if(i != -1) prefs_sp[s].add(p) }
 		}
+		
+		rank.each |pi, s| 
+		{ 
+			prefs_sp_unalloc[s] = [,]
+			pi.each |i, p| { if(i != -1 && !PS.keys.contains(p)) prefs_sp_unalloc[s].add(p) }
+		}
+		echo(prefs_sp_unalloc)
 		projs.each |Project p| 
 		{ 
 			prefs_ps[p] = [,]
 			prefs_sp.each |v, k| { if(v.contains(p)) prefs_ps[p].add(k)  }
 		}
-		echo(SP)
+		echo(newStudProj)
 		newStudProj.each |p, s1| 
 		{   
-			p1 := SP[s1]
+			p1 := newStudProj[s1]
 			prefs_sp[s1].each |p3| 
 			{   
 				if(!PS.containsKey(p3))
 				{
 					prefs_ps[p1].each |s2|
 					{
+						//if project not assigned yet
 						if(!newStudProj.vals.contains(p3))
 						{
-						newStudProj[s2] = p1
-						newStudProj[s1] = p3
+							newStudProj[s2] = p1
+							newStudProj[s1] = p3
 						}
 					}
 				}
 			}
-			//echo(SP)
+		//echo(SP)
 		}
 		echo(newStudProj)
 		SP.clear
