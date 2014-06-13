@@ -331,6 +331,46 @@ const class Statistics
 	static Void moveStud(Student:Project? SP, Project:Student PS, Project[] projs, Student:[Project:Int] rank, Int mode)
 	{
 		newStudProj := Student:Project?[:]
+		prefs_sp := Student:Project[][:]
+		prefs_ps := Project:Student[][:]
+		
+		//Populate newStudProj with SP
+		SP.each |p, s| { newStudProj[s] = p }
+		
+		//Populate the preference maps by getting all the possible preferences
+		//of S->P and P->S
+		rank.each |pi, s| 
+		{ 
+			prefs_sp[s] = [,]
+			pi.each |i, p| { if(i != -1) prefs_sp[s].add(p) }
+		}
+		projs.each |Project p| 
+		{ 
+			prefs_ps[p] = [,]
+			prefs_sp.each |v, k| { if(v.contains(p)) prefs_ps[p].add(k)  }
+		}
+		echo(SP)
+		newStudProj.each |p, s1| 
+		{   
+			p1 := SP[s1]
+			prefs_sp[s1].each |p3| 
+			{   
+				if(!PS.containsKey(p3))
+				{
+					prefs_ps[p1].each |s2|
+					{
+						newStudProj[s2] = p1
+						newStudProj[s1] = p3
+					}
+				}
+			}
+			//echo(SP)
+		}
+		echo(newStudProj)
+		SP.clear
+		SP.addAll(newStudProj)
+
+		/*
 		remProj := Project?[,]
 		//--------------------Shift--------------------
 		//Shifts all projects forward by one student
@@ -460,6 +500,7 @@ const class Statistics
 			SP.clear
 			SP.addAll(newStudProj)	
 		}
+		*/
 	}
 	
 	static Int:[Int:[Student:Project?]] manipProjs(Int:[Project:Student] psMap, Student[] students, Project[] projects, Student:[Project:Int] rank)
@@ -498,10 +539,10 @@ const class Statistics
 			
 			ps.each |Student s, Project p| { newRank[i][s] = p }
 		}
-		//echo(newRank[1])
-		//moveStud(newRank[1], psMap[1], projects.toImmutable, rank, 1)
-		(1..newRank.size).each { moveStud(newRank[it], psMap[it], projects.toImmutable,  rank, 1) }
-		//echo(newRank[1])
+		//echo(newRank)
+		moveStud(newRank[1], psMap[1], projects.toImmutable, rank, 1)
+		//(1..newRank.size).each { moveStud(newRank[it], psMap[it], projects.toImmutable,  rank, 1) }
+		//echo(newRank)
 		return newRank
 	}
 	
@@ -517,10 +558,10 @@ const class Statistics
 			
 			ps.each |Student s, Project p| { newRank[i][s] = p }
 		}
-		echo(newRank)
-		//moveStud(newRank[1], psMap[1], projects.toImmutable, rank, 3)
-		(1..newRank.size).each { moveStud(newRank[it], psMap[it], projects.toImmutable, rank, 2) }
-		echo(newRank)
+		//echo(newRank)
+		moveStud(newRank[1], psMap[1], projects.toImmutable, rank, 3)
+		//(1..newRank.size).each { moveStud(newRank[it], psMap[it], projects.toImmutable, rank, 2) }
+		//echo(newRank)
 		return newRank
 	}
 

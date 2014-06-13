@@ -56,7 +56,7 @@ class Optimise
 	static Void callMeMaybe(Int min, Int max, Int avg, Int:Int objFn, Int:[Project:Bool] assigned, Student:[Project:Int] rank, Int:[Project:Student] Nalloc, Student[] stdList, Project[] projList, Supervisor[] supList )
 	{
 		add := Statistics.addProjs(Nalloc,stdList, projList, rank)
-		steepDesc(objFn, Nalloc, rank, add, stdList)
+		//steepDesc(objFn, Nalloc, rank, add, stdList)
 	}
 	
 	static Float extractObjfn(Int:[Project:Student] alloc, Student:[Project:Int] rank, Student[] students, Int index)
