@@ -1,7 +1,4 @@
 *.pod
-.metadata/.log
-*.xml
+*.log
 *.xml
 *.lock
-.metadata/.plugins/org.eclipse.core.resources/.history/0/d00f4fa251f20013191ec294197229e0
-.metadata/.plugins/org.eclipse.core.resources/.history/0/d045ef7bbcd200131499c98f76e3e492
