@@ -334,6 +334,7 @@ const class Statistics
 		prefs_sp := Student:Project[][:]
 		prefs_ps := Project:Student[][:]
 		prefs_sp_unalloc := Student:Project[][:]
+		PSrw := PS.rw
 		
 		//Populate newStudProj with SP
 		SP.each |p, s| { newStudProj[s] = p }
@@ -351,37 +352,110 @@ const class Statistics
 			prefs_sp_unalloc[s] = [,]
 			pi.each |i, p| { if(i != -1 && !PS.keys.contains(p)) prefs_sp_unalloc[s].add(p) }
 		}
-		echo(prefs_sp_unalloc)
+
 		projs.each |Project p| 
 		{ 
 			prefs_ps[p] = [,]
 			prefs_sp.each |v, k| { if(v.contains(p)) prefs_ps[p].add(k)  }
 		}
-		echo(newStudProj)
+		echo(SP)
 		newStudProj.each |p, s1| 
 		{   
 			p1 := newStudProj[s1]
 			prefs_sp[s1].each |p3| 
 			{   
-				if(!PS.containsKey(p3))
+				if(!PSrw.containsKey(p3))
 				{
+					echo("\nprefs_sp[$s1]: $p3: $p1")
+					tmp := p1
 					prefs_ps[p1].each |s2|
 					{
 						//if project not assigned yet
-						if(!newStudProj.vals.contains(p3))
-						{
-							newStudProj[s2] = p1
-							newStudProj[s1] = p3
-						}
+						echo("$s2: ${newStudProj[s2]}")
+						tmp = newStudProj[s2]
+						echo(tmp)
+						newStudProj[s1] = p3
+						newStudProj[s2] = p1	
+						PSrw[p3] = s1
+						//if(tmp != null) PSrw.remove(tmp)
 					}
 				}
 			}
-		//echo(SP)
 		}
-		echo(newStudProj)
+		echo("\n$newStudProj")
+		if(newStudProj.vals == SP.vals)
+			echo("No change in total projects")
+		else
+		{
+			echo("Change detected. The following projects differ: ")
+			numSP := 0
+			numNSP := 0
+			SP.vals.each { if(it != null) ++numSP }
+			newStudProj.vals.each { if(it != null) ++numNSP }
+			if(numSP < numNSP)
+			{
+				echo("Project(s) added")
+				echo("$numSP projects previously; now $numNSP projects")
+			}
+			else if(numSP > numNSP)
+			{
+				echo("Project(s) deleted")
+				echo("$numSP projects previously; now $numNSP projects")
+			}
+			else echo("Project(s) shifted")
+			/*
+			echo("In newStudProj: ")
+			newStudProj.each |p, s| { if(!SP.vals.contains(p)) echo("$s: $p") }
+			echo("In SP: ")
+			SP.each |p, s| { if(!newStudProj.vals.contains(p)) echo("$s: $p") }*/
+		}
 		SP.clear
 		SP.addAll(newStudProj)
+		/*
+		switch(mode)
+		{
+			case 1:
+				//--------------------Add--------------------
+				//Attempts to add a project to the each student
+				//Only valid preferences can be added.
+				//Adds a project only if the student has no project
+				//If it can be added to the student, it is added then removed from the prefs_sp_unalloc mapping
+				prefs_sp_unalloc.each |p, s|
+				{
+					if(!p.isEmpty)
+					{
+						p.each |prj|
+						{ 
+							if(newStudProj[s] == null)
+							{
+								newStudProj[s] = prj 
+								prefs_sp_unalloc.each |pr, st| { if(pr.contains(prj)) prefs_sp_unalloc[st].remove(prj) }
+							}
+						}
+					}
+				}
 
+			case 2:
+				//--------------------Delete--------------------
+				//Removes a project from the last student shifted
+				//Simply nulls the final student
+				newStudProj[newStudProj.keys.last] = null
+
+			case 3:
+				//"--------------------Rotate--------------------"
+				//newStudProj is filled. need to use a temporary variable.
+				//populate it then repopulate newStudProj with those values
+				tmp := Student:Project?[:]
+				(0..<SP.size-1).each { tmp.add(newStudProj.keys[it], newStudProj.vals[it+1])}
+				tmp.add(newStudProj.keys.last, newStudProj.vals.first)
+				newStudProj.clear
+				newStudProj.addAll(tmp)	
+
+			default: echo("Incorrect mode")
+		}
+		echo(newStudProj)
+		
+		*/
 		/*
 		remProj := Project?[,]
 		//--------------------Shift--------------------
