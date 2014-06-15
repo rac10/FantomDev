@@ -92,7 +92,7 @@ class Optimise
 		//Populate newStudProj with SP
 		SP.each |p, s| { newStudProj[s] = p }
 		
-		rank.each|pi, s| { echo("$s -> $pi") }
+		//rank.each|pi, s| { echo("$s -> $pi") }
 		//Populate the preference maps by getting all the possible preferences
 		//of S->P and P->S
 		rank.each |pi, s| 
@@ -101,6 +101,8 @@ class Optimise
 			pi.each |i, p| { if(i != -1) prefs_sp[s].add(p) }
 		}
 		
+		//Populate a map of students to unallocated projects
+		//students with no projects are also mapped
 		rank.each |pi, s| 
 		{ 
 			prefs_sp_unalloc[s] = [,]
@@ -126,22 +128,28 @@ class Optimise
 						//if project not assigned yet
 						echo("$s2: ${newStudProj[s2]}")
 						tmp := newStudProj[s2]
-						//if(!newStudProj.vals.contains(p3))
-						//{
+						if(!newStudProj.vals.contains(p3))
+						{
 							newStudProj[s2] = p1
 							newStudProj[s1] = p3
 							PSrw[p3] = s1
 							//removes the assigned project from the unallocated list
 							//adds the project being shifted out into the unallocated list
+							
 							prefs_sp_unalloc.each |pr, st| 
 							{ 
+								
 								if(pr.contains(p3)) 
-									prefs_sp_unalloc[st].remove(p3) 
+								{
+									prefs_sp_unalloc[st].remove(p3)
+									prefs_sp_unalloc[st].remove(p1)
+								}
 								if(tmp != null && rank[st][tmp] != -1 && !prefs_sp_unalloc[st].contains(tmp))
 									prefs_sp_unalloc[st].add(tmp)
+								
 							}
 							
-						//}
+						}
 
 						/*
 						numAssigned := 0
@@ -150,7 +158,7 @@ class Optimise
 						//if(newStudProj.vals.eachWhile { p1 } == null)
 						//{
 						//if(numAssigned <= 1)
-						//{
+						//{!newStudProj.vals.contains(p3)
 						//if(!prefs_sp_unalloc[s2].isEmpty)
 						//{
 						//newStudProj[s1] = p3
@@ -162,7 +170,7 @@ class Optimise
 						//shifts p2 out of s2
 						//and p1 into s2
 						//what happens to p2 after? no idea
-						PSrw[p3] = s1
+						//PSrw[p3] = s1
 						//p1 = tmp
 							
 						//}
@@ -174,11 +182,12 @@ class Optimise
 		echo("\n$newStudProj")
 		echo(prefs_sp_unalloc)
 		//newStudProj.each |p, s| {  if(p != null && rank[s][p] != -1) echo("OK= $s: $p = ${rank[s][p]}"); else if(p != null) echo("not OK = $s: $p = ${rank[s][p]}"); else echo("OK: $s: $p")  }
+		
 		if(newStudProj.vals == SP.vals)
 			echo("No change in total projList")
 		else
 		{
-			echo("Change detected. The following projList differ: ")
+			echo("Change detected.")
 			numSP := 0
 			numNSP := 0
 			SP.vals.each { if(it != null) ++numSP }
