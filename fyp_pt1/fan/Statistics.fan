@@ -2,7 +2,8 @@ using concurrent
 
 ** Statistics.fan
 ** Deals with the MC allocation
-** 
+** and performs calculations for allocations 
+
 const class Statistics
 {	
 	static Void main(Str[] args)
@@ -80,7 +81,7 @@ const class Statistics
 //		del := delProjs(Nalloc,stdList, projList, rank)
 //		rotate := rotateProjs(Nalloc, stdList, projList, rank)
 		//manip := manipProjs(Nalloc, stdList, projList, rank)
-		Optimise.callMeMaybe(min, max, avg, objFn, assigned, rank, Nalloc, stdList, projList, supList)
+		Optimise.callOpt(min, max, avg, objFn, assigned, rank, Nalloc, stdList, projList, supList)
 		//Optimise.steepDesc(objFn, Nalloc, rank, projList, stdList)
 		//Optimise.simAnneal(objFn, Nalloc, rank, shift, stdList)
 

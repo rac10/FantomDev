@@ -1,5 +1,6 @@
-** This file deals with simulated annealing
-** It makes use of the results from the MC allocation from Statistics.fan 
+** This file deals with simulated annealing/steepest descent code
+** It makes use of the results from the MC allocation from Statistics.fan
+** It calls Statistics.fan from the main which in turn calls a function from this file
 
 
 
@@ -8,12 +9,7 @@ class Optimise
 	static const Int T := Int.maxVal
 	static Void main(Str[] args)
 	{
-		
-//		del := delProjs(Nalloc,stdList, projList, rank)
-//		rotate := rotateProjs(Nalloc, stdList, projList, rank)
-		//manip := manipProjs(Nalloc, stdList, projList, rank)
-		
-		//Optimise.simAnneal(objFn, Nalloc, rank, shift, stdList)
+
 		/* Find best allocation using simulated annealing
 		identify it's the best allocation
 		test by altering the number of projList
@@ -53,10 +49,10 @@ class Optimise
 
 	}
 	
-	static Void callMeMaybe(Int min, Int max, Int avg, Int:Int objFn, Int:[Project:Bool] assigned, Student:[Project:Int] rank, Int:[Project:Student] Nalloc, Student[] stdList, Project[] projList, Supervisor[] supList )
+	static Void callOpt(Int min, Int max, Int avg, Int:Int objFn, Int:[Project:Bool] assigned, Student:[Project:Int] rank, Int:[Project:Student] Nalloc, Student[] stdList, Project[] projList, Supervisor[] supList )
 	{
-		asdf := shiftProjs(Nalloc, stdList, projList, rank)
-		//steepDesc(objFn, Nalloc, rank, add, stdList)
+		//asdf := shiftProjs(Nalloc, stdList, projList, rank)
+		whatever := steepDesc(objFn, Nalloc, rank, projList, stdList)
 	}
 	
 	static Float extractObjfn(Int:[Project:Student] alloc, Student:[Project:Int] rank, Student[] stdList, Int index)
@@ -108,106 +104,106 @@ class Optimise
 			prefs_sp_unalloc[s] = [,]
 			pi.each |i, p| { if(i != -1 && (!PS.keys.contains(p) || newStudProj[s] == null)) prefs_sp_unalloc[s].add(p) }
 		}
-		echo(prefs_sp_unalloc)
+		//echo(prefs_sp_unalloc)
 		projs.each |Project p| 
 		{ 
 			prefs_ps[p] = [,]
 			prefs_sp.each |v, k| { if(v.contains(p)) prefs_ps[p].add(k)  }
 		}
-		echo("\n$SP")
-		newStudProj.each |p, s1| 
-		{   
-			p1 := (Project?) newStudProj[s1]
-			nulled := false
-			
-			prefs_sp[s1].each |p3| 
+		//echo("\n$SP")
+		newStudProj.each |p1, s1| 
+		{
+			if(p1 != null)
 			{
-				if(!nulled)
-				{
-					//performs a shift
-					if(p1 != null && !PSrw.containsKey(p3))
-					{
-						echo("\nprefs_sp[$s1]: (p3) $p3: (p1) $p1")
-						prefs_ps[p1].each |s2|
-						{
-							if(!nulled)
-							{
-								//if project not assigned yet
-								echo("$s2: ${newStudProj[s2]}")
-								tmp := newStudProj[s2]
-								if(!newStudProj.vals.contains(p3))
-								{
-									newStudProj[s2] = p1
-									newStudProj[s1] = p3
-									PSrw[p3] = s1
-									
-									
-									//removes the assigned project from the unallocated list
-									//adds the project being shifted out into the unallocated list
-									prefs_sp_unalloc.each |pr, st| 
-									{ 
-										
-										if(pr.contains(p3)) 
-										{
-											prefs_sp_unalloc[st].remove(p3)
-											prefs_sp_unalloc[st].remove(p1)
-										}
-										if(tmp != null && rank[st][tmp] != -1 && !prefs_sp_unalloc[st].contains(tmp))
-											prefs_sp_unalloc[st].add(tmp)
-										
-									}
-									
-									
-								}
-								else
-								{
-										newStudProj[s2] = null
-										newStudProj[s1] = p3
-										PSrw[p3] = s1
-										prefs_sp_unalloc.each |pr, st| 
-										{ 
-											
-											if(pr.contains(p3)) 
-											{
-												prefs_sp_unalloc[st].remove(p3)
-											}
-											if(tmp != null && rank[st][tmp] != -1 && !prefs_sp_unalloc[st].contains(tmp))
-												prefs_sp_unalloc[st].add(tmp)
-											
-										}
-										nulled = true
-									
-								}
-							}
-							//if(newStudProj.vals.eachWhile { p1 } == null)
-							//{
-							//if(numAssigned <= 1)
-							//{!newStudProj.vals.contains(p3)
-							//if(!prefs_sp_unalloc[s2].isEmpty)
-							//{
-							//newStudProj[s1] = p3
-							
-							//shifts p1 out of s1
-							//and p3 into s1
-							//newStudProj[s2] = p1
-								
-							//shifts p2 out of s2
-							//and p1 into s2
-							//what happens to p2 after? no idea
-							//PSrw[p3] = s1
-							//if(tmp != null)
-							//	p1 = tmp
-								
-							//}
-							//if(tmp != null) PSrw.remove(tmp)
-						}
-					}
-				}
-				else return
+			//newStudProj is Student:Project?
+    			prefs_sp[s1].each |p3| 
+    			{
+    				//prefs_sp is always Student:Project[]
+    				//performs a shift
+    				if(!PSrw.containsKey(p3))
+    				{
+    					//echo("\nprefs_sp[$s1]: (p3) $p3: (p1) $p1")
+    					prefs_ps[p1].each |s2|
+    					{
+    						//if project not assigned yet
+    						//echo("$s2: ${newStudProj[s2]}")
+    						p2 := newStudProj[s2]
+    						if(!newStudProj.vals.contains(p3))
+    						{
+    							newStudProj[s1] = p3
+    							newStudProj[s2] = p1
+    							PSrw[p3] = s1
+    							
+    							
+    							//removes the assigned project from the unallocated list
+    							//adds the project being shifted out into the unallocated list
+    							prefs_sp_unalloc.each |pr, st| 
+    							{ 
+    								
+    								if(pr.contains(p3)) 
+    								{
+    										prefs_sp_unalloc[st].remove(p3)
+    										prefs_sp_unalloc[st].remove(p1)
+    									}
+    									if(p2 != null && rank[st][p2] != -1 && !prefs_sp_unalloc[st].contains(p2))
+    										prefs_sp_unalloc[st].add(p2)
+    									
+    								}
+    								
+    								
+    							}
+    							
+    							else
+    							{
+    									newStudProj[s1] = p3
+    									newStudProj[s2] = null
+    									PSrw[p3] = s1
+    									prefs_sp_unalloc.each |pr, st| 
+    									{ 
+    										
+    										if(pr.contains(p3)) 
+    										{
+    											prefs_sp_unalloc[st].remove(p3)
+    										}
+    										if(p2 != null && rank[st][p2] != -1 && !prefs_sp_unalloc[st].contains(p2))
+    											prefs_sp_unalloc[st].add(p2)
+    										
+    									}
+    								
+    							}
+    						
+    						
+    					}
+    						//if(newStudProj.vals.eachWhile { p1 } == null)
+    						//{
+    						//if(numAssigned <= 1)
+    						//{!newStudProj.vals.contains(p3)
+    						//if(!prefs_sp_unalloc[s2].isEmpty)
+    						//{
+    						//newStudProj[s1] = p3
+    						
+    						//shifts p1 out of s1
+    						//and p3 into s1
+    						//newStudProj[s2] = p1
+    							
+    						//shifts p2 out of s2
+    						//and p1 into s2
+    						//what happens to p2 after? no idea
+    						//PSrw[p3] = s1
+    						//if(tmp != null)
+    						//	p1 = tmp
+    							
+    						//}
+    						//if(tmp != null) PSrw.remove(tmp)
+    					
+    				}
+    				
+    			}
+				
 			}
 		}
-		echo("\n$newStudProj")
-		echo(prefs_sp_unalloc)
+		//echo("\n$newStudProj")
+		//echo(prefs_sp_unalloc)
 		//newStudProj.each |p, s| {  if(p != null && rank[s][p] != -1) echo("OK= $s: $p = ${rank[s][p]}"); else if(p != null) echo("not OK = $s: $p = ${rank[s][p]}"); else echo("OK: $s: $p")  }
 		
 		if(SP.vals.containsAll(newStudProj.vals))
@@ -299,8 +295,8 @@ class Optimise
 			ps.each |Student s, Project p| { newRank[i][s] = p }
 		}
 		//echo(newRank)
-		moveStud(newRank[1], psMap[1], projList.toImmutable, rank)
-		//(1..newRank.size).each { moveStud(newRank[it], psMap[it], projList.toImmutable,  rank) }
+		//moveStud(newRank[1], psMap[1], projList.toImmutable, rank)
+		(1..newRank.size).each { moveStud(newRank[it], psMap[it], projList.toImmutable,  rank) }
 		//echo(newRank)
 		return newRank
 	}
@@ -308,26 +304,30 @@ class Optimise
 	
 	static Int:[Student:Project?] steepDesc(Int:Int objFn, Int:[Project:Student] Nalloc, Student:[Project:Int] rank, Project[] projList, Student[] stdList)
 	{
-		//do it once
-		permute := shiftProjs(Nalloc,stdList, projList, rank)
+		//calculates the set of permutations
+		//do it once first
+		permute := shiftProjs(Nalloc, stdList, projList, rank)
 		permPS := Int:[Project:Student][:]
 		permute.each |sp, i| { permPS[i] = [:]; sp.each |Project? p, Student s| { if(p != null) permPS[i][p] = s }  }
+		permute.each |v, k| { echo("$k: $v")}
 		permObjFn := Statistics.calcObjFn(rank, stdList, permPS)
 		a1 := permObjFn.vals.min
 		a := objFn.vals.min
 
 		
-		//loop each time
+		//loop to recalculating the permutations
 		while(a1 < a)
 		{
 			//find the set of permutes
+			echo("Looping..")
 			a = a1
 			permute = shiftProjs(Nalloc,stdList, projList, rank)
 			permute.each |sp, j| { permPS[j] = [:]; sp.each |Project? p, Student s| { if(p != null) permPS[j][p] = s }  }
 			permObjFn = Statistics.calcObjFn(rank, stdList, permPS)
 			a1 = permObjFn.vals.min
 		}
-		
+		Nalloc.each |v, k| {echo("$k: $v") }
+		permute.each |v, k| { echo("$k: $v")}
 		return permute
 	}
 	
@@ -413,15 +413,10 @@ class Optimise
 		x := 10
 		L := objFn[1]
 		i := 1
-		//need to easily use ps() syntax..
+		//probability bias
 		a_i := (ps(i, alloc, rank, permute, stdList) - ps(i-1, alloc, rank, permute, stdList))/ps(alloc.size-1, alloc, rank, permute, stdList)
 		n := 0
 		e := 0
-		while(n < Int.maxVal && e > Int.maxVal)
-		{
-			//need to redo this probably
-			
-		}
 		
 		for (T := objFn[1].toFloat; T > 0.00008f; T *= alpha) //T = T * alpha which used as a cooling schedule 
 		{

@@ -3,6 +3,10 @@
 using gfx
 using fwt
 
+** GUI.fan
+** This is the GUI interface of the program
+** This shows that GUI can be easily implemented and be used to set parameters for the program.
+
 class GUI
 {
 	static Void main(Str[] args)

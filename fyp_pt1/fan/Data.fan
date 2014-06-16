@@ -7,10 +7,9 @@
 //   Part 1 of the FYP
 
  
-**
-**
-**
-** 
+** This file contains the basic representation of all the classes that can be used
+** It can also parse information from .txt files and create a class out of that
+
 class Data
 {
     static Void main(Str[] args)
