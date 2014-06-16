@@ -36,15 +36,15 @@ class Optimise
 		
 		
 		1) Select an initial value
-    2) Obtain the objective function
-    3) Select the reduction factor
-    4) Randomly select a value neighbouring the initial value
-    5) Calculate the difference between the neighbouring value and the initial value
-    	a. If the difference is less than zero, then use the neighbouring value as the new initial value for the next iteration
-    b. Otherwise, generate a random number such that if this random number is less a defined factor, then the neighbouring value is assigned as the new initial value for the following iteration
-    6) Repeat the iterations as needed
-    7) Scale the objective function by the reduction factor
-    8) Repeat until the halting condition is met
+	2) Obtain the objective function
+	3) Select the reduction factor
+	4) Randomly select a value neighbouring the initial value
+	5) Calculate the difference between the neighbouring value and the initial value
+		a. If the difference is less than zero, then use the neighbouring value as the new initial value for the next iteration
+	b. Otherwise, generate a random number such that if this random number is less a defined factor, then the neighbouring value is assigned as the new initial value for the following iteration
+	6) Repeat the iterations as needed
+	7) Scale the objective function by the reduction factor
+	8) Repeat until the halting condition is met
 		*/
 		reduc := 0.4f
 		Statistics.main([args[0], args[1], args[2]])
@@ -118,73 +118,100 @@ class Optimise
 		newStudProj.each |p, s1| 
 		{   
 			p1 := (Project?) newStudProj[s1]
+			nulled := false
+			
 			prefs_sp[s1].each |p3| 
-			{   
-				if(!PSrw.containsKey(p3))
+			{
+				if(!nulled)
 				{
-					echo("\nprefs_sp[$s1]: (p3) $p3: (p1) $p1")
-					prefs_ps[p1].each |s2|
+					//performs a shift
+					if(p1 != null && !PSrw.containsKey(p3))
 					{
-						//if project not assigned yet
-						echo("$s2: ${newStudProj[s2]}")
-						tmp := newStudProj[s2]
-						if(!newStudProj.vals.contains(p3))
+						echo("\nprefs_sp[$s1]: (p3) $p3: (p1) $p1")
+						prefs_ps[p1].each |s2|
 						{
-							newStudProj[s2] = p1
-							newStudProj[s1] = p3
-							PSrw[p3] = s1
-							//removes the assigned project from the unallocated list
-							//adds the project being shifted out into the unallocated list
-							
-							prefs_sp_unalloc.each |pr, st| 
-							{ 
-								
-								if(pr.contains(p3)) 
+							if(!nulled)
+							{
+								//if project not assigned yet
+								echo("$s2: ${newStudProj[s2]}")
+								tmp := newStudProj[s2]
+								if(!newStudProj.vals.contains(p3))
 								{
-									prefs_sp_unalloc[st].remove(p3)
-									prefs_sp_unalloc[st].remove(p1)
+									newStudProj[s2] = p1
+									newStudProj[s1] = p3
+									PSrw[p3] = s1
+									
+									
+									//removes the assigned project from the unallocated list
+									//adds the project being shifted out into the unallocated list
+									prefs_sp_unalloc.each |pr, st| 
+									{ 
+										
+										if(pr.contains(p3)) 
+										{
+											prefs_sp_unalloc[st].remove(p3)
+											prefs_sp_unalloc[st].remove(p1)
+										}
+										if(tmp != null && rank[st][tmp] != -1 && !prefs_sp_unalloc[st].contains(tmp))
+											prefs_sp_unalloc[st].add(tmp)
+										
+									}
+									
+									
 								}
-								if(tmp != null && rank[st][tmp] != -1 && !prefs_sp_unalloc[st].contains(tmp))
-									prefs_sp_unalloc[st].add(tmp)
-								
+								else
+								{
+										newStudProj[s2] = null
+										newStudProj[s1] = p3
+										PSrw[p3] = s1
+										prefs_sp_unalloc.each |pr, st| 
+										{ 
+											
+											if(pr.contains(p3)) 
+											{
+												prefs_sp_unalloc[st].remove(p3)
+											}
+											if(tmp != null && rank[st][tmp] != -1 && !prefs_sp_unalloc[st].contains(tmp))
+												prefs_sp_unalloc[st].add(tmp)
+											
+										}
+										nulled = true
+									
+								}
 							}
+							//if(newStudProj.vals.eachWhile { p1 } == null)
+							//{
+							//if(numAssigned <= 1)
+							//{!newStudProj.vals.contains(p3)
+							//if(!prefs_sp_unalloc[s2].isEmpty)
+							//{
+							//newStudProj[s1] = p3
 							
+							//shifts p1 out of s1
+							//and p3 into s1
+							//newStudProj[s2] = p1
+								
+							//shifts p2 out of s2
+							//and p1 into s2
+							//what happens to p2 after? no idea
+							//PSrw[p3] = s1
+							//if(tmp != null)
+							//	p1 = tmp
+								
+							//}
+							//if(tmp != null) PSrw.remove(tmp)
 						}
-
-						/*
-						numAssigned := 0
-						newStudProj.each { if(it==p1) ++numAssigned}
-						*/
-						//if(newStudProj.vals.eachWhile { p1 } == null)
-						//{
-						//if(numAssigned <= 1)
-						//{!newStudProj.vals.contains(p3)
-						//if(!prefs_sp_unalloc[s2].isEmpty)
-						//{
-						//newStudProj[s1] = p3
-						
-						//shifts p1 out of s1
-						//and p3 into s1
-						//newStudProj[s2] = p1
-							
-						//shifts p2 out of s2
-						//and p1 into s2
-						//what happens to p2 after? no idea
-						//PSrw[p3] = s1
-						//p1 = tmp
-							
-						//}
-						//if(tmp != null) PSrw.remove(tmp)
 					}
 				}
+				else return
 			}
 		}
 		echo("\n$newStudProj")
 		echo(prefs_sp_unalloc)
 		//newStudProj.each |p, s| {  if(p != null && rank[s][p] != -1) echo("OK= $s: $p = ${rank[s][p]}"); else if(p != null) echo("not OK = $s: $p = ${rank[s][p]}"); else echo("OK: $s: $p")  }
 		
-		if(newStudProj.vals == SP.vals)
-			echo("No change in total projList")
+		if(SP.vals.containsAll(newStudProj.vals))
+			echo("Project(s) rotated")
 		else
 		{
 			echo("Change detected.")
@@ -195,12 +222,12 @@ class Optimise
 			if(numSP < numNSP)
 			{
 				echo("Project(s) added")
-				echo("$numSP projList previously; now $numNSP projList")
+				echo("$numSP projects previously; now $numNSP projects")
 			}
 			else if(numSP > numNSP)
 			{
 				echo("Project(s) deleted")
-				echo("$numSP projList previously; now $numNSP projList")
+				echo("$numSP projects previously; now $numNSP projects")
 			}
 			else echo("Project(s) shifted")
 			/*
@@ -307,25 +334,25 @@ class Optimise
 	static Void simAnneal(Int:Int objFn, Int:[Project:Student] alloc, Student:[Project:Int] rank, [Int:[Student:Project?]]? permute, Student[] stdList)
 	{
 		/*	1) Select an initial value
-            2) Obtain the objective function
-            3) Select the reduction factor
-            4) Randomly select a value neighbouring the initial value
-            5) Calculate the difference between the neighbouring value and the initial value
-            	a. If the difference is less than zero, then use the neighbouring value as the new initial value for the next iteration
-            b. Otherwise, generate a random number such that if this random number is less a defined factor, then the neighbouring value is assigned as the new initial value for the following iteration
-            6) Repeat the iterations as needed
-            7) Scale the objective function by the reduction factor
-            8) Repeat until the halting condition is met */
-    	/*	     
-    	
-    	For a given allocation a you have objective function R(a) - objFn
-    
-        for allocation a, and permutation set S, you have permuted allocation set:
-        A' = {s(a) | s in S}
-        for elements a' in A' you evaluate R(a'). These are the neighbouring values. 
-        For SD you choose the minimum. 
-        For SA you choose an element at random, biased towards lower values according to exponential based on temperature.
-        */
+			2) Obtain the objective function
+			3) Select the reduction factor
+			4) Randomly select a value neighbouring the initial value
+			5) Calculate the difference between the neighbouring value and the initial value
+				a. If the difference is less than zero, then use the neighbouring value as the new initial value for the next iteration
+			b. Otherwise, generate a random number such that if this random number is less a defined factor, then the neighbouring value is assigned as the new initial value for the following iteration
+			6) Repeat the iterations as needed
+			7) Scale the objective function by the reduction factor
+			8) Repeat until the halting condition is met */
+		/*		 
+		
+		For a given allocation a you have objective function R(a) - objFn
+	
+		for allocation a, and permutation set S, you have permuted allocation set:
+		A' = {s(a) | s in S}
+		for elements a' in A' you evaluate R(a'). These are the neighbouring values. 
+		For SD you choose the minimum. 
+		For SA you choose an element at random, biased towards lower values according to exponential based on temperature.
+		*/
 		a := Int[,]
 		objFn.each { a.add(it) }
 		a.sort |i, j| { return i <=> j  }
@@ -333,41 +360,41 @@ class Optimise
 		//the below function gets the key for each of the values in the sorted array, a
 		a.each |i| { k := objFn.eachWhile |v, k| { i == v ? k : null}; echo(k) }
 		/*
-        >How do you do this bias properly?
-        
-        Calculate the relative probabilities if each a in A':
-        	p(a) = exp(-T*R(a))
-        order the a values by R (objFn), so that a(0) is the lowest R(a) of a in A', a(N-1) is the highest R(a)
-        generate the relative probability partial sums:
-        ps(k) = sum(i = 0 to k) { p(a(i))} (you can do this quite efficiently)
-        so that  the probability of choosing a(i) is (ps(i)-ps(i-1))/ps(N-1)
-        
-        Now make the choice using a uniform random number in range 0 - ps(N-1). You can do a binary search lookup to determine which "bin" the random number falls into.
-        
-        there are maybe ways to optimise this - e.g. incorporate the exponential in the random number and calculate p(a) without an exponential - but I would not worry too much about this. SA will be pretty inefficient because we have to calculate all the neighbours but then choose only one of them.
-        
-        SD is not as bad because the total number of steps in SD is necessarily small!
-        
-        Note also that you should get SD working first - it is simpler than SA and much easier to test.
-    	
-    	(1) calculate set of perms P of initial allocation a
-        (2) for each a' in P calculate objFun(a').
-        (3) Take the a' in P with minimum objFun. Call this a1. (If multiple minimum select one). If this has objFun(a1) > objFun(a) we have finished and a is the "local minimum" answer. Otherwise set a = a1 and iterate from (1).
+		>How do you do this bias properly?
+		
+		Calculate the relative probabilities if each a in A':
+			p(a) = exp(-T*R(a))
+		order the a values by R (objFn), so that a(0) is the lowest R(a) of a in A', a(N-1) is the highest R(a)
+		generate the relative probability partial sums:
+		ps(k) = sum(i = 0 to k) { p(a(i))} (you can do this quite efficiently)
+		so that  the probability of choosing a(i) is (ps(i)-ps(i-1))/ps(N-1)
+		
+		Now make the choice using a uniform random number in range 0 - ps(N-1). You can do a binary search lookup to determine which "bin" the random number falls into.
+		
+		there are maybe ways to optimise this - e.g. incorporate the exponential in the random number and calculate p(a) without an exponential - but I would not worry too much about this. SA will be pretty inefficient because we have to calculate all the neighbours but then choose only one of them.
+		
+		SD is not as bad because the total number of steps in SD is necessarily small!
+		
+		Note also that you should get SD working first - it is simpler than SA and much easier to test.
+		
+		(1) calculate set of perms P of initial allocation a
+		(2) for each a' in P calculate objFun(a').
+		(3) Take the a' in P with minimum objFun. Call this a1. (If multiple minimum select one). If this has objFun(a1) > objFun(a) we have finished and a is the "local minimum" answer. Otherwise set a = a1 and iterate from (1).
 
-    	*/
+		*/
 		newObj := Int:Int[:]
 		newAlloc := Int:[Project:Student][:]
 		newRank := Student:[Project:Int][:]
 		newPerm := Int:[Student:Project?][:]
 		alpha := 0.98f
 		//T := 32767f  //some arbitrarily high value
-        k := 2
+		k := 2
 
-    	
+		
 		//ps(k)
-    	
+		
 		//e.pow is too large
-        
+		
 		
 
 		//P_i = (ps(i)-ps(i-1))/ps(alloc.size-1)
@@ -397,23 +424,23 @@ class Optimise
 		}
 		
 		for (T := objFn[1].toFloat; T > 0.00008f; T *= alpha) //T = T * alpha which used as a cooling schedule 
-        {
+		{
 			num := 0f
-            for (j := 0; j<200; j++) //This loop is for the process of iteration (or searching for new states)
-            {
-                xNew := x.toFloat + (Float.random * 2f - 1f)
-                LNew := xNew.pow(4f) + 4/3*xNew.pow(3f) - 4 * xNew.pow(2f) + 5
+			for (j := 0; j<200; j++) //This loop is for the process of iteration (or searching for new states)
+			{
+				xNew := x.toFloat + (Float.random * 2f - 1f)
+				LNew := xNew.pow(4f) + 4/3*xNew.pow(3f) - 4 * xNew.pow(2f) + 5
 				(0..k).each { num += Float.e.pow(-T*extractObjfn(alloc, rank, stdList, 1)) }
 				
-                if (LNew < L.toFloat || Float.random <= Float.e.pow(-(LNew-L)/T))
-                {
-                    L = LNew.toInt;
-                    x = xNew.toInt;
-                }
-            }
-     
-     
-        }
+				if (LNew < L.toFloat || Float.random <= Float.e.pow(-(LNew-L)/T))
+				{
+					L = LNew.toInt;
+					x = xNew.toInt;
+				}
+			}
+	 
+	 
+		}
 		
 		echo("Final state = $x, total of F(x) = $L")
 	}
