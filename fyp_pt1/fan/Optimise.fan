@@ -321,10 +321,11 @@ class Optimise
 			//find the set of permutes
 			echo("Looping..")
 			a = a1
-			permute = shiftProjs(Nalloc,stdList, projList, rank)
+			permute = shiftProjs(permPS,stdList, projList, rank)
 			permute.each |sp, j| { permPS[j] = [:]; sp.each |Project? p, Student s| { if(p != null) permPS[j][p] = s }  }
 			permObjFn = Statistics.calcObjFn(rank, stdList, permPS)
 			a1 = permObjFn.vals.min
+
 		}
 		Nalloc.each |v, k| {echo("$k: $v") }
 		permute.each |v, k| { echo("$k: $v")}
