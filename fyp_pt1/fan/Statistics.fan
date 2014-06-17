@@ -16,14 +16,28 @@ const class Statistics
 		//this initialisation ensures that no supervisor's project limits can be exceeded
 		echo("Initialising project generation lists..")
 		allocOK := false
-		while(!allocOK)
+		tstart := Duration.now
+		try	
 		{
-    		stdList = (1..args[0].toInt).map { Student (it, "Stud" + it.toStr, 2050-it, "stud"+ (08..14).random.toStr) }
-    		projList = (1..args[1].toInt).map { Project(it, it, "Prof" + (1..args[2].toInt).random.toStr, [null, "Dr " + it.toStr].random, ["BEng", "MEng", "MSc"].random, "Project" + it.toStr) }
-    		supList = (1..args[2].toInt).map { Supervisor(it, "Prof" + it.toStr, ["E", "I"].random, ["E", "I"].random + (10..20).random.toStr, (2..5).random) }
-			allocOK = checkSup(supList, projList)
+    		while(!allocOK)
+    		{
+        		stdList = (1..args[0].toInt).map { Student (it, "Stud" + it.toStr, 2050-it, "stud"+ (08..14).random.toStr) }
+        		projList = (1..args[1].toInt).map { Project(it, it, "Prof" + (1..args[2].toInt).random.toStr, [null, "Dr " + it.toStr].random, ["BEng", "MEng", "MSc"].random, "Project" + it.toStr) }
+        		supList = (1..args[2].toInt).map { Supervisor(it, "Prof" + it.toStr, ["E", "I"].random, ["E", "I"].random + (10..20).random.toStr, (2..5).random) }
+    			allocOK = checkSup(supList, projList)
+    		}
+			
 		}
-		echo("Lists generated successfully!\n")
+		catch(Err e)
+		{
+			echo(e.msg)
+		}
+		if(allocOK)
+			echo("Lists generated successfully!\n")
+		else echo("Lists not generated due to timeout")
+		
+		
+		
 		
 		
 		//prefList := (1..stdList.size).map { Preference(stdList.getSafe(it), projList.getSafe(it), "Comment" + it.toStr, (1..projList.size).random.toFloat) }
@@ -40,21 +54,13 @@ const class Statistics
 		//high rank(10) indicates low preference
 		stdList.each |s|
 		{    			
-			try
-			{
-				rank[s] = [:]
-				projList.each 
-				{ 
-					
-					if((0..100).random <= pS)
-						rank[s][it] = (1..10).random
-					else rank[s][it] = -1
-				}
+			rank[s] = [:]
+			projList.each 
+			{ 
 				
-			}
-			catch(Err e)
-			{
-				echo(e.msg)
+				if((0..100).random <= pS)
+					rank[s][it] = (1..10).random
+				else rank[s][it] = -1
 			}	
 		}
 		
@@ -229,12 +235,12 @@ const class Statistics
 		//counts how many projects has been allocated
 		//only counts mandatory supervisor
 		projAlloc := Supervisor:Int[:]
-		supervisors.each { projAlloc[it] = 0 }
 		OK := true
 		
 
-		projAlloc.each |i, s|
+		supervisors.each |s, i|
 		{ 
+			projAlloc[s] = 0 
 			projects.each 
 			{ 
 				if(s.name == it.sup1)
