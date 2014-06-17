@@ -9,6 +9,7 @@ class GUI
 {
 	static Void main(Str[] args)
 	{
+		//main class. contains the window.
 		Window
 		{
 			title = "Main menu"
@@ -41,6 +42,7 @@ class GUI
 	
 	static Menu callMenuBar(Str?[] values)
 	{
+		//the menu bars
 		return Menu
 		{
 			Menu
@@ -67,6 +69,7 @@ class GUI
 		}
 	}
 	
+	//functions for calling other functions
 	static Void callData(Str[] args)
 	{
 		Data.main(args)

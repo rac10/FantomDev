@@ -89,6 +89,7 @@ class Data
 
 const class Student
 {
+	//student class, constructor overloaded
 	new make(Int sid, Str name, Int regYr, Str email)
 	{
 		try
@@ -139,6 +140,7 @@ const class Student
 
 const class Project
 {
+	//project class
 	new make(Int pid, Int studid, Str? sup1, Str? sup2, Str? tstream, Str? title)
 	{
 		try
@@ -171,6 +173,7 @@ const class Project
 
 const class Preference
 {
+	//preference class; uses Project and Student classes
 	new make(Student s, Project p, Str comment, Float value)
 	{
 		try
@@ -201,6 +204,7 @@ const class Preference
 
 const class Supervisor
 {
+	//supervisor class
 	new make(Int supid, Str? name, Str? dept, Str? group, Int max)
 	{
 		try
@@ -230,6 +234,7 @@ const class Supervisor
 
 const class StudProj
 {
+	//composite class of Student, Project
 	new make(Student s, Project p)
 	{
 		this.student = s
@@ -254,6 +259,7 @@ const class StudProj
 
 mixin Constraint
 {
+	//abstract class that can be used for keeping constraints
 	abstract Str? check_preference(StudProj sp, [StudProj:Int] allpr)
 
 }
