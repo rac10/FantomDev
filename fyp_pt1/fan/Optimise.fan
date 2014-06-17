@@ -137,38 +137,35 @@ class Optimise
 							//if project not assigned yet
 							//echo("$s2: ${newStudProj[s2]}")
 							curSup := (Supervisor) supCount.eachWhile |i, s| { p2.sup1 == s.name ? s : null}
-							//if(curObjVal <= objVal)
-							//{
-								if(!newStudProj.vals.contains(p2) && supCount[curSup] < curSup.max)
-								{
-									newStudProj[s1] = p2
-									newStudProj[s2] = p1
-									PSrw[p2] = s1
-								}
-								else
-								{
-									newStudProj[s1] = p2
-									newStudProj[s2] = null
-									PSrw[p2] = s1
-								}
-								supCount = countSup(supList, newStudProj)
-								curObjVal = calcObjVal(rank, newStudProj)
-								if(curObjVal < objVal)
-								{
-									//if the newly placed newStudProj is better
-									//replace SP
-									SP.clear
-									SP.addAll(newStudProj)
-								}
-								else
-								{
-									//if it's not better, revert to original SP values
-									newStudProj[s1] = SP[s1]
-									newStudProj[s2] = SP[s2]
-								}
-								//else if(curObjVal == objVal) echo("Equal")
-								//else echo("Not working")
-							//}
+							if(!newStudProj.vals.contains(p2) && supCount[curSup] < curSup.max)
+							{
+								newStudProj[s1] = p2
+								newStudProj[s2] = p1
+								PSrw[p2] = s1
+							}
+							else
+							{
+								newStudProj[s1] = p2
+								newStudProj[s2] = null
+								PSrw[p2] = s1
+							}
+							supCount = countSup(supList, newStudProj)
+							curObjVal = calcObjVal(rank, newStudProj)
+							if(curObjVal < objVal)
+							{
+								//if the newly placed newStudProj is better
+								//replace SP
+								SP.clear
+								SP.addAll(newStudProj)
+							}
+							else
+							{
+								//if it's not better, revert to original SP values
+								newStudProj[s1] = SP[s1]
+								newStudProj[s2] = SP[s2]
+							}
+							//else if(curObjVal == objVal) echo("Equal")
+							//else echo("Not working")
 						}
 					}
 				}
