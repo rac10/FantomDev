@@ -287,7 +287,7 @@ class Optimise
 		permPS := Int:[Project:Student][:]
 		permute.each |sp, i| { permPS[i] = [:]; sp.each |Project? p, Student s| { if(p != null) permPS[i][p] = s }  }
 		echo(Nalloc)
-		echo(permPS)
+		//echo(permPS)
 		//permute.each |v, k| { echo("$k: $v")}
 		permObjFn := Statistics.calcObjFn(rank, permPS)
 		a1 := permObjFn.vals.min
