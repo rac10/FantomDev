@@ -57,7 +57,7 @@ class Optimise
 	
 	static Float extractObjfn(Int:[Project:Student] alloc, Student:[Project:Int] rank, Student[] stdList, Int index)
 	{
-		num := Statistics.calcObjFn(rank, stdList, alloc)
+		num := Statistics.calcObjFn(rank, alloc)
 		return num[index].toFloat
 	}
 	
@@ -82,9 +82,22 @@ class Optimise
 		supList.each |s, i|
 		{
 			supCount[s] = 0
-    		SP.each { if(it != null && it.sup1 == s.name) supCount[s]++	}	
+			SP.each { if(it != null && it.sup1 == s.name) supCount[s]++	}	
 		}
 		return supCount
+	}
+	
+	static Int calcObjVal(Student:[Project:Int] rank, Student:Project? SP)
+	{
+		sum := 0
+		K := 2
+		SP.each |p, s|
+		{
+			if(p != null && rank[s][p] != -1)
+				sum += rank[s][p]
+			else sum += 11
+		}
+		return sum.pow(K)
 	}
 	
 	static Void moveStud(Student:Project? SP, Project:Student PS, Project[] projs, Student:[Project:Int] rank, Supervisor[] supList)
@@ -93,12 +106,13 @@ class Optimise
 		prefs_sp := Student:Project[][:]
 		prefs_ps := Project:Student[][:]
 		prefs_sp_unalloc := Student:Project[][:]
-		newList := Student:Project[][:]
 		supCount := countSup(supList, SP)
 		PSrw := PS.rw
+		objVal := calcObjVal(rank, SP)
 		
+
 		//Populate newStudProj with SP
-		SP.each |p, s| { newStudProj[s] = p; newList[s] = [,] }
+		SP.each |p, s| { newStudProj[s] = p }
 		
 		//rank.each|pi, s| { echo("$s -> $pi") }
 		//Populate the preference maps by getting all the possible preferences
@@ -123,117 +137,73 @@ class Optimise
 			prefs_sp.each |v, k| { if(v.contains(p)) prefs_ps[p].add(k)  }
 		}
 		
-		
+		//prefs_sp.each |v, k| { echo("$k: $v")}
+		//prefs_ps.each |v, k| { echo("$k: $v")}
 		
 		//echo(supCount)
+		//initial state
 		//echo("\n$SP")
-		
+		curObjVal := calcObjVal(rank, newStudProj)
 		newStudProj.each |p1, s1| 
 		{
 			//newStudProj is Student:Project?
 			if(p1 != null)
 			{
-    			prefs_sp[s1].each |p2| 
-    			{
-    				/*
-    				prefs_ps[p1].each |s2| 
-    				{   
-    					prefs_sp[s2].each |p3|
-    					{
-    						if(p2 != p3)
-    						{
-								if(!newList[s1].contains(p2))
-									newList[s1].add(p2)
-								if(!newList[s2].contains(p3))
-									newList[s2].add(p3)
-    						}
-    					}
-    					
-    				}
-    				*/
-    				
-    				//prefs_sp is always Student:Project[]
-    				//performs a shift
-    				if(!PSrw.containsKey(p2))
-    				{
-    					//echo("\nprefs_sp[$s1]: (p3) $p3: (p1) $p1")
-    					prefs_ps[p1].each |s2|
-    					{
-    						//if project not assigned yet
-    						//echo("$s2: ${newStudProj[s2]}")
-        					p3 := newStudProj[s2]
-							//if(p2 != null)
-    						//{
-        						curSup := (Supervisor) supCount.eachWhile |i, s| { p2.sup1 == s.name ? s : null}
-        						if(!newStudProj.vals.contains(p2) && supCount[curSup] < curSup.max)
-        						{
-        							newStudProj[s1] = p2
-        							newStudProj[s2] = p1
-        							PSrw[p2] = s1
-        							//supCount[supCount.eachWhile|i, s| {p1.sup1 == s.name ? s : null}]++
-        							
-        							
-        							//removes the assigned project from the unallocated list
-        							//adds the project being shifted out into the unallocated list
-        							prefs_sp_unalloc.each |pr, st| 
-        							{ 
-        								
-        								if(pr.contains(p2)) 
-        								{
-        										prefs_sp_unalloc[st].remove(p2)
-        										prefs_sp_unalloc[st].remove(p1)
-        								}
-        									if(rank[st][p2] != -1 && !prefs_sp_unalloc[st].contains(p2))
-        										prefs_sp_unalloc[st].add(p2)
-        	
-        							}
-        							
-        						}
-        						
-        						else
-        						{
-        							newStudProj[s1] = p2
-        							newStudProj[s2] = null
-        							PSrw[p2] = s1
-        					
-        							prefs_sp_unalloc.each |pr, st| 
-        							{ 
-        								
-        								if(pr.contains(p2)) 
-        								{
-        									prefs_sp_unalloc[st].remove(p2)
-        								}
-        								if(rank[st][p2] != -1 && !prefs_sp_unalloc[st].contains(p2))
-        									prefs_sp_unalloc[st].add(p2)
-        								
-        							}
-        						}
-								//supCount[curSup]--
-        						supCount = countSup(supList, newStudProj)
-        					//}
-    						
-    					}
-    				}
-				
+				prefs_sp[s1].each |p2| 
+				{					
+					//prefs_sp is always Student:Project[]
+					//performs a shift
+					if(!PSrw.containsKey(p2))
+					{
+						//echo("\nprefs_sp[$s1]: (p2) $p2: (p1) $p1")
+						prefs_ps[p1].each |s2|
+						{
+							//if project not assigned yet
+							//echo("$s2: ${newStudProj[s2]}")
+							curSup := (Supervisor) supCount.eachWhile |i, s| { p2.sup1 == s.name ? s : null}
+							if(curObjVal <= objVal)
+							{
+								if(!newStudProj.vals.contains(p2) && supCount[curSup] < curSup.max)
+								{
+									newStudProj[s1] = p2
+									newStudProj[s2] = p1
+									PSrw[p2] = s1
+								}
+								else
+								{
+									newStudProj[s1] = p2
+									newStudProj[s2] = null
+									PSrw[p2] = s1
+								}
+								supCount = countSup(supList, newStudProj)
+								curObjVal = calcObjVal(rank, newStudProj)
+								if(curObjVal < objVal)
+								{
+									SP.clear
+									SP.addAll(newStudProj)
+								}	
+							}
+						}
+					}
 				}
-				
-			}
-			else
-			{
-				
 			}
 		}
-		echo(newList)
+		//final state
+		//echo(SP)
+		//echo(newStudProj)
+		
+		//echo("$curObjVal, $objVal")
+		//echo(prefs_sp)
 		//echo("\n$newStudProj")
 		//echo(supCount)
 		//supCount.each |i, s| {   echo("$s.name: $s.max")}
-	//newStudProj.each |p, s| {  if(p != null && rank[s][p] != -1) echo("OK= $s: $p = ${rank[s][p]}"); else if(p != null) echo("not OK = $s: $p = ${rank[s][p]}"); else echo("OK: $s: $p")  }
-		
+		//newStudProj.each |p, s| {  if(p != null && rank[s][p] != -1) echo("OK= $s: $p = ${rank[s][p]}"); else if(p != null) echo("not OK = $s: $p = ${rank[s][p]}"); else echo("OK: $s: $p")  }
+		/*
 		if(SP.vals.containsAll(newStudProj.vals))
 			echo("Project(s) rotated")
 		else
 		{
-			echo("Change detected.")
+			//echo("Change detected.")
 			numSP := 0
 			numNSP := 0
 			SP.vals.each { if(it != null) ++numSP }
@@ -254,9 +224,7 @@ class Optimise
 			newStudProj.each |p, s| { if(!SP.vals.contains(p)) echo("$s: $p") }
 			echo("In SP: ")
 			SP.each |p, s| { if(!newStudProj.vals.contains(p)) echo("$s: $p") }*/
-		}
-		SP.clear
-		SP.addAll(newStudProj)
+		}*/
 		/*
 		switch(mode)
 		{
@@ -317,7 +285,7 @@ class Optimise
 			
 			ps.each |Student s, Project p| { newRank[i][s] = p }
 		}
-		//echo(newRank)
+		//newRank.each |a, b| { echo("$b: $a") }
 		//moveStud(newRank[1], psMap[1], projList.toImmutable, rank)
 		(1..newRank.size).each { moveStud(newRank[it], psMap[it], projList.toImmutable,  rank, supList) }
 		//echo(newRank)
@@ -333,7 +301,7 @@ class Optimise
 		permPS := Int:[Project:Student][:]
 		permute.each |sp, i| { permPS[i] = [:]; sp.each |Project? p, Student s| { if(p != null) permPS[i][p] = s }  }
 		permute.each |v, k| { echo("$k: $v")}
-		permObjFn := Statistics.calcObjFn(rank, stdList, permPS)
+		permObjFn := Statistics.calcObjFn(rank, permPS)
 		a1 := permObjFn.vals.min
 		a := objFn.vals.min
 
@@ -344,13 +312,13 @@ class Optimise
 			//find the set of permutes
 			echo("Looping..")
 			a = a1
-			permute = shiftProjs(permPS,stdList, projList, rank, supList)
+			permute = shiftProjs(permPS, stdList, projList, rank, supList)
 			permute.each |sp, j| { permPS[j] = [:]; sp.each |Project? p, Student s| { if(p != null) permPS[j][p] = s }  }
-			permObjFn = Statistics.calcObjFn(rank, stdList, permPS)
+			permObjFn = Statistics.calcObjFn(rank, permPS)
 			a1 = permObjFn.vals.min
 
 		}
-		Nalloc.each |v, k| {echo("$k: $v") }
+		//Nalloc.each |v, k| {echo("$k: $v") }
 		permute.each |v, k| { echo("$k: $v")}
 		return permute
 	}

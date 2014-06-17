@@ -12,8 +12,8 @@
 
 class Data
 {
-    static Void main(Str[] args)
-    {
+	static Void main(Str[] args)
+	{
 		//readFile
 		//All local students
 		Alpha := Student(1, "Alex", 2010, "rac10")		
@@ -34,7 +34,7 @@ class Data
 			echo(e.msg)
 		}
 		
-        P1 := Project(1, 1, "Mr Bob", null, "BEng", "Project 1")
+		P1 := Project(1, 1, "Mr Bob", null, "BEng", "Project 1")
 		P2 := Project(2, 2, "Mr Jack", null, "MEng", "Project 2")
 		P3 := Project(3, 3, "Mr James", "Mr Shane", "MSc", "Project 3")
 		
@@ -42,11 +42,11 @@ class Data
 		projList := (1..10).map { Project(it, it, "Prof" + it.toStr, [null, "Dr " + it.toStr].random, ["BEng", "MEng", "MSc"].random, "Project" + it.toStr )}
 		echo(projList)
 		//Each supervisor has a limit to their projects
-    	Jack := Supervisor(5, "Jack Black", "EE", "E42", 3)
+		Jack := Supervisor(5, "Jack Black", "EE", "E42", 3)
 		
 		supList := (1..10).map { Supervisor(it, "Prof" + it.toStr, ["E", "I"].random, ["E", "I"].random + (10..20).random.toStr, 1+(1..5).random) }
 		echo(supList)
-//      Help := StudProj(Alpha, P1)
+//	  Help := StudProj(Alpha, P1)
 //		Assist := StudProj(Beta, P1)
 		
 		//need to declare a map of type Student:Project first
@@ -60,20 +60,20 @@ class Data
 		echo(rank)
 		echo(ProcessData.mapValid(rank))
 		
-        /*
-        need to generate initial set of test data
-        randomly allocate the test data
-        optimise the allocations
-        students -> prefs(mutable)
-        id -> students
-        id -> projects
-        id -> supervisor 
-        cyclic graph
-        need to lookup from stud->stud.prefs
-        
-        */
-    
-    }
+		/*
+		need to generate initial set of test data
+		randomly allocate the test data
+		optimise the allocations
+		students -> prefs(mutable)
+		id -> students
+		id -> projects
+		id -> supervisor 
+		cyclic graph
+		need to lookup from stud->stud.prefs
+		
+		*/
+	
+	}
 	
 	static Void readFile()
 	{
@@ -89,84 +89,84 @@ class Data
 
 const class Student
 {
-    new make(Int sid, Str name, Int regYr, Str email)
-    {
+	new make(Int sid, Str name, Int regYr, Str email)
+	{
 		try
 		{
-            this.sid = sid
-            this.name = name
-            this.regYr = regYr
-            this.email = email
+			this.sid = sid
+			this.name = name
+			this.regYr = regYr
+			this.email = email
 		}
 		catch(Err e)
 		{
 			echo(e.msg)
 		}
-    }
+	}
 	
 	new makeStr(Str BigString)
 	{
 		try
 		{
 			SubStrings := BigString.split.map { toInt(10, false) ?: it }
-    		this.sid = SubStrings[0]
-    		this.name = SubStrings[1]
-    		this.regYr = SubStrings[2]
-    		this.email = SubStrings[3]
+			this.sid = SubStrings[0]
+			this.name = SubStrings[1]
+			this.regYr = SubStrings[2]
+			this.email = SubStrings[3]
 		}
 		catch(Err e)
 		{
 			echo(e.msg)
 		}
 	}
-    
-    new makeSpecial(|This|? f := null)
+		
+	new makeSpecial(|This|? f := null)
 	{ 
 		if (f != null) 
 			f(this)
 	}
-       
+	   
 	override Str toStr()
 	{
 		//used for debugging
 		return ("$this.sid - $this.name")
 	}
-    const Int sid
-    const Str? name
-    const Int regYr
-    const Str? email
+	const Int sid
+	const Str? name
+	const Int regYr
+	const Str? email
 }
 
 const class Project
 {
-    new make(Int pid, Int studid, Str? sup1, Str? sup2, Str? tstream, Str? title)
-    {
+	new make(Int pid, Int studid, Str? sup1, Str? sup2, Str? tstream, Str? title)
+	{
 		try
 		{
-            this.pid = pid
-    		this.studid = studid
-            this.sup1 = sup1
-    		this.sup2 = sup2
-            this.tstream = tstream
-            this.title = title
+			this.pid = pid
+			this.studid = studid
+			this.sup1 = sup1
+			this.sup2 = sup2
+			this.tstream = tstream
+			this.title = title
 		}
 		catch(Err e)
 		{
 			echo(e.msg)
 		}
-    }
+	}
 	override Str toStr()
 	{
 		//used for debugging
 		return ("$this.pid - $this.title")
 	}
 	
-    const Int pid
-    const Int studid
-    const Str? sup1
+	const Int pid
+	const Int studid
+	const Str? sup1
 	const Str? sup2
-    const Str? tstream
-    const Str? title
+	const Str? tstream
+	const Str? title
 }
 
 const class Preference
@@ -192,10 +192,10 @@ const class Preference
 		return ("$this.sid, $this.pid - $this.title")
 	}
 	
-    const Int sid
+	const Int sid
 	const Int pid
 	const Str? title
-    const Str? comment
+	const Str? comment
 	const Float value
 }
 
@@ -205,11 +205,11 @@ const class Supervisor
 	{
 		try
 		{
-    		this.supid = supid
-    		this.name = name
-    		this.dept = dept
-    		this.group = group
-    		this.max = max
+			this.supid = supid
+			this.name = name
+			this.dept = dept
+			this.group = group
+			this.max = max
 		}
 		catch(Err e)
 		{
@@ -221,35 +221,35 @@ const class Supervisor
 		//used for debugging
 		return ("$this.supid - $this.name")
 	}
-    const Int supid
-    const Str? name
-    const Str? dept
-    const Str? group
+	const Int supid
+	const Str? name
+	const Str? dept
+	const Str? group
 	const Int max
 }
 
 const class StudProj
 {
-    new make(Student s, Project p)
-    {
-        this.student = s
-        this.project = p
-    }
-    
-    const Student student
-    const Project project
-    
-    override Bool equals(Obj? x)
-    {
-        y:= x as StudProj
-        return (student == y?.student && project == y?.project)
-    
-    }
+	new make(Student s, Project p)
+	{
+		this.student = s
+		this.project = p
+	}
+	
+	const Student student
+	const Project project
+	
+	override Bool equals(Obj? x)
+	{
+		y:= x as StudProj
+		return (student == y?.student && project == y?.project)
+	
+	}
 
-    override Int hash()
-    {
-        return (student.hash()*7907 + project.hash()*7919);
-    }
+	override Int hash()
+	{
+		return (student.hash()*7907 + project.hash()*7919);
+	}
 }
 
 mixin Constraint

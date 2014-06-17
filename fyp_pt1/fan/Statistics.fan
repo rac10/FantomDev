@@ -19,13 +19,13 @@ const class Statistics
 		tstart := Duration.now
 		try	
 		{
-    		while(!allocOK)
-    		{
-        		stdList = (1..args[0].toInt).map { Student (it, "Stud" + it.toStr, 2050-it, "stud"+ (08..14).random.toStr) }
-        		projList = (1..args[1].toInt).map { Project(it, it, "Prof" + (1..args[2].toInt).random.toStr, [null, "Dr " + it.toStr].random, ["BEng", "MEng", "MSc"].random, "Project" + it.toStr) }
-        		supList = (1..args[2].toInt).map { Supervisor(it, "Prof" + it.toStr, ["E", "I"].random, ["E", "I"].random + (10..20).random.toStr, (2..5).random) }
-    			allocOK = checkSup(supList, projList)
-    		}
+			while(!allocOK)
+			{
+				stdList = (1..args[0].toInt).map { Student (it, "Stud" + it.toStr, 2050-it, "stud"+ (08..14).random.toStr) }
+				projList = (1..args[1].toInt).map { Project(it, it, "Prof" + (1..args[2].toInt).random.toStr, [null, "Dr " + it.toStr].random, ["BEng", "MEng", "MSc"].random, "Project" + it.toStr) }
+				supList = (1..args[2].toInt).map { Supervisor(it, "Prof" + it.toStr, ["E", "I"].random, ["E", "I"].random + (10..20).random.toStr, (2..5).random) }
+				allocOK = checkSup(supList, projList)
+			}
 			
 		}
 		catch(Err e)
@@ -53,7 +53,7 @@ const class Statistics
 		//low rank(1) indicates high preference
 		//high rank(10) indicates low preference
 		stdList.each |s|
-		{    			
+		{				
 			rank[s] = [:]
 			projList.each 
 			{ 
@@ -73,7 +73,7 @@ const class Statistics
 		assigned := findAssigned(Nalloc, projList)
 		projProb := calcProjProb(Nalloc, projList)
 		studProb := calcStudProb(Nalloc, stdList)
-		objFn := calcObjFn(rank, stdList, Nalloc)
+		objFn := calcObjFn(rank, Nalloc)
 		//objFn.each |b, a| { echo("Iteration $a: objective function $b") }
 		min := objFn.vals.max
 		max := objFn.vals.min
@@ -122,34 +122,34 @@ const class Statistics
 		
 		//initial project allocation
 		studTmp.each |s, i|
-		{    			
+		{				
 			try
 			{
 				allAssigned := projAssigned.all { it == true }
 				
 				if(!allAssigned)
 				{
-    				projTmp.each 
-    				{
-    					r := rankTmp[s][it]
+					projTmp.each 
+					{
+						r := rankTmp[s][it]
 						if(r !=- 1)
 							rankProj[r].add(it)
-    				}
-					
-    				//use rankProj to determine the project assignments
-    				p := (Project?) rankProj.eachWhile |proj| { proj.random }
-					if(p != null)
-					{
-        				projAssign[p] = s
-        				projAssigned[p] = true
-						
-						//removes the allocated project
-        				studTmp.each { rankTmp[it].remove(p) }
-        				projTmp.remove(p)
 					}
 					
-					//clear rankProj. using .clear removes all pointers; don't do that
-    				(1..10).each { rankProj[it] = [,] }
+					//use rankProj to determine the project assignments
+					p := (Project?) rankProj.eachWhile |proj| { proj.random }
+					if(p != null)
+					{
+						projAssign[p] = s
+						projAssigned[p] = true
+						
+						//removes the allocated project
+						studTmp.each { rankTmp[it].remove(p) }
+						projTmp.remove(p)
+					}
+					
+					//clear rankProj. using ".clear" removes all pointers; don't do that
+					(1..10).each { rankProj[it] = [,] }
 				}
 			}
 			catch(Err e)
@@ -258,7 +258,7 @@ const class Statistics
 		return OK
 	}
 	
-	static Project:Float calcProjProb(Int:[Project:Student] rankList,  Project[] projects)
+	static Project:Float calcProjProb(Int:[Project:Student] psMap,  Project[] projects)
 	{
 		//calculates probability of each project being assigned
 		projProb := Project:Float[:]
@@ -267,7 +267,7 @@ const class Statistics
 		projects.each { projProb[it] = 0f }
 		
 		//adding and calculation
-		rankList.each |ps, i| 
+		psMap.each |ps, i| 
 		{ 
 			ps.each |Student? s, Project? p| 
 			{ 	
@@ -275,12 +275,12 @@ const class Statistics
 					projProb[p]++
 			}
 		}
-		projects.each { projProb[it] *= 100f/rankList.size.toFloat }
+		projects.each { projProb[it] *= 100f/psMap.size.toFloat }
 		//projProb.each |i, p| { echo("Probability for $p.title being assigned is $i%") }
 		return projProb
 	}
 	
-	static Student:Float calcStudProb(Int:[Project:Student] rankList, Student[] students)
+	static Student:Float calcStudProb(Int:[Project:Student] psMap, Student[] students)
 	{
 		//calculates probability of each student being assigned
 		studProb := Student:Float[:]
@@ -289,7 +289,7 @@ const class Statistics
 		students.each { studProb[it] = 0f }
 		
 		//adding and calculation
-		rankList.each |ps, i| 
+		psMap.each |ps, i| 
 		{ 
 			ps.each |Student? s, Project? p| 
 			{ 
@@ -298,23 +298,23 @@ const class Statistics
 
 			}
 		}
-		students.each { studProb[it] *= 100f/rankList.size.toFloat }
+		students.each { studProb[it] *= 100f/psMap.size.toFloat }
 		//studProb.each |i, s| { echo("Probability for $s.name being assigned is $i%") }
 		return studProb
 	}
 	
-	static Int:Int calcObjFn(Student:[Project:Int] rank, Student[] students, Int:[Project:Student] rankList)
+	static Int:Int calcObjFn(Student:[Project:Int] rank, Int:[Project:Student] psMap)
 	{
 		//need to do sum of all ranks of EACH STUDENT
 		//if unallocated, then rank is set to 11
 		//all ranks eventually raised to power K
 		
-		//rankList shows the allocation of project:student for each iteration
+		//psMap shows the allocation of project:student for each iteration
 		//rank shows the Students' preferences per student. rank[s][p] = -1 indicates that there is no preference
 		sum := Int:Int[:]
 		K := 2
-		(1..rankList.size).each { sum[it] = 0 }
-		rankList.each |ps, i|
+		(1..psMap.size).each { sum[it] = 0 }
+		psMap.each |ps, i|
 		{
 			ps.each |s, p|
 			{
