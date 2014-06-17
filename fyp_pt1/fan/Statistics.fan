@@ -16,30 +16,14 @@ const class Statistics
 		//this initialisation ensures that no supervisor's project limits can be exceeded
 		echo("Initialising project generation lists..")
 		allocOK := false
-		tstart := Duration.now
-		try	
+		while(!allocOK)
 		{
-			while(!allocOK)
-			{
-				stdList = (1..args[0].toInt).map { Student (it, "Stud" + it.toStr, 2050-it, "stud"+ (08..14).random.toStr) }
-				projList = (1..args[1].toInt).map { Project(it, it, "Prof" + (1..args[2].toInt).random.toStr, [null, "Dr " + it.toStr].random, ["BEng", "MEng", "MSc"].random, "Project" + it.toStr) }
-				supList = (1..args[2].toInt).map { Supervisor(it, "Prof" + it.toStr, ["E", "I"].random, ["E", "I"].random + (10..20).random.toStr, (2..5).random) }
-				allocOK = checkSup(supList, projList)
-			}
-			
+			stdList = (1..args[0].toInt).map { Student (it, "Stud" + it.toStr, 2050-it, "stud"+ (08..14).random.toStr) }
+			projList = (1..args[1].toInt).map { Project(it, it, "Prof" + (1..args[2].toInt).random.toStr, [null, "Dr " + it.toStr].random, ["BEng", "MEng", "MSc"].random, "Project" + it.toStr) }
+			supList = (1..args[2].toInt).map { Supervisor(it, "Prof" + it.toStr, ["E", "I"].random, ["E", "I"].random + (10..20).random.toStr, (2..5).random) }
+			allocOK = checkSup(supList, projList)
 		}
-		catch(Err e)
-		{
-			echo(e.msg)
-		}
-		if(allocOK)
-			echo("Lists generated successfully!\n")
-		else echo("Lists not generated due to timeout")
-		
-		
-		
-		
-		
+		echo("Lists generated successfully!\n")
 		//prefList := (1..stdList.size).map { Preference(stdList.getSafe(it), projList.getSafe(it), "Comment" + it.toStr, (1..projList.size).random.toFloat) }
 		rank := Student:[Project:Int]?[:]
 		//uses random probability to decide whether a student
@@ -65,9 +49,7 @@ const class Statistics
 		}
 		
 		
-		//rank.each |r, i| { echo(i.toStr + " " +  r)  }
-		//hi := MC(stdList, projList, supList, rank)
-		//echo(hi))
+		//rank.each |r, i| { echo("$i: $r")  }
 		Nalloc := MCNtimes(stdList, projList, supList, rank, 3)
 		//Nalloc.each |r, i| { echo(i.toStr + ": " + r) }
 		assigned := findAssigned(Nalloc, projList)
@@ -83,13 +65,7 @@ const class Statistics
 		//echo("Minimum value obtained is: $min")
 		//echo("Max value obtained is: $max")
 		//echo("Average value is: $avg")
-		//add := addProjs(Nalloc,stdList, projList, rank)
-//		del := delProjs(Nalloc,stdList, projList, rank)
-//		rotate := rotateProjs(Nalloc, stdList, projList, rank)
-		//manip := manipProjs(Nalloc, stdList, projList, rank)
 		Optimise.callOpt(min, max, avg, objFn, assigned, rank, Nalloc, stdList, projList, supList)
-		//Optimise.steepDesc(objFn, Nalloc, rank, projList, stdList)
-		//Optimise.simAnneal(objFn, Nalloc, rank, shift, stdList)
 
 	}
 	

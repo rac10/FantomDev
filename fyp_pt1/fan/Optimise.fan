@@ -9,7 +9,7 @@ class Optimise
 	static const Int T := Int.maxVal
 	static Void main(Str[] args)
 	{
-
+		//this function's only job is to call statistics.fan with its parameters
 		/* Find best allocation using simulated annealing
 		identify it's the best allocation
 		test by altering the number of projList
@@ -45,24 +45,27 @@ class Optimise
 		reduc := 0.4f
 		Statistics.main([args[0], args[1], args[2]])
 		echo("Done!")
-		//simAnneal(10000)
 
 	}
 	
 	static Void callOpt(Int min, Int max, Int avg, Int:Int objFn, Int:[Project:Bool] assigned, Student:[Project:Int] rank, Int:[Project:Student] Nalloc, Student[] stdList, Project[] projList, Supervisor[] supList)
 	{
-		//asdf := shiftProjs(Nalloc, stdList, projList, rank)
-		whatever := steepDesc(objFn, Nalloc, rank, projList, stdList, supList)
+		//this function gets called by statistics.fan
+		//and calls other functions from this class
+		result := steepDesc(objFn, Nalloc, rank, projList, stdList, supList)
+		echo(result)
 	}
 	
 	static Float extractObjfn(Int:[Project:Student] alloc, Student:[Project:Int] rank, Student[] stdList, Int index)
 	{
+		//takes the objective function at a particular index
 		num := Statistics.calcObjFn(rank, alloc)
 		return num[index].toFloat
 	}
 	
 	static Float ps(Int k, Int:[Project:Student] alloc, Student:[Project:Int] rank, [Int:[Student:Project?]]? permute, Student[] stdList)
 	{
+		//used for probability bias in simulated annealing
 		num := 0f
 		(0..k).each { num += Float.e.pow(-T*extractObjfn(alloc, rank, stdList, 1)) }
 		return num
@@ -70,6 +73,7 @@ class Optimise
 	
 	static Bool validShift(Student st, Project? pr, Student:[Project:Int] rank)
 	{
+		//checks whether the result of a shift is valid
 		valid := true
 		if(pr == null || rank[st][pr] == -1) 
 			valid = false 
@@ -78,6 +82,7 @@ class Optimise
 	
 	static Supervisor:Int countSup(Supervisor[] supList, Student:Project? SP)
 	{
+		//counts the number of projects assigned for each supervisor
 		supCount := Supervisor:Int[:]
 		supList.each |s, i|
 		{
@@ -89,6 +94,7 @@ class Optimise
 	
 	static Int calcObjVal(Student:[Project:Int] rank, Student:Project? SP)
 	{
+		//calculates the objective value of a particular map
 		sum := 0
 		K := 2
 		SP.each |p, s|
@@ -102,6 +108,9 @@ class Optimise
 	
 	static Void moveStud(Student:Project? SP, Project:Student PS, Project[] projs, Student:[Project:Int] rank, Supervisor[] supList)
 	{
+		//attempts to shift/moves students
+		//only shifts/moves students if they produce
+		//a better result than the initial allocation
 		newStudProj := Student:Project?[:]
 		prefs_sp := Student:Project[][:]
 		prefs_ps := Project:Student[][:]
@@ -161,8 +170,8 @@ class Optimise
 							//if project not assigned yet
 							//echo("$s2: ${newStudProj[s2]}")
 							curSup := (Supervisor) supCount.eachWhile |i, s| { p2.sup1 == s.name ? s : null}
-							if(curObjVal <= objVal)
-							{
+							//if(curObjVal <= objVal)
+							//{
 								if(!newStudProj.vals.contains(p2) && supCount[curSup] < curSup.max)
 								{
 									newStudProj[s1] = p2
@@ -179,10 +188,13 @@ class Optimise
 								curObjVal = calcObjVal(rank, newStudProj)
 								if(curObjVal < objVal)
 								{
+									//echo("working")
 									SP.clear
 									SP.addAll(newStudProj)
-								}	
-							}
+								}
+								//else if(curObjVal == objVal) echo("Equal")
+								//else echo("Not working")
+							//}
 						}
 					}
 				}
@@ -275,6 +287,9 @@ class Optimise
 		
 	static Int:[Student:Project?] shiftProjs(Int:[Project:Student] psMap, Student[] stdList, Project[] projList, Student:[Project:Int] rank, Supervisor[] supList)
 	{
+		//deals with the project shifting
+		//creates local variables that are returned after being processed
+		
 		newRank := Int:[Student:Project?][:]
 		resRank := Student:Project?[:]
 		(1..psMap.size).each { newRank[it] = [:]}
@@ -293,14 +308,16 @@ class Optimise
 	}
 	
 	
-	static Int:[Student:Project?] steepDesc(Int:Int objFn, Int:[Project:Student] Nalloc, Student:[Project:Int] rank, Project[] projList, Student[] stdList, Supervisor[] supList)
+	static Int:[Project:Student] steepDesc(Int:Int objFn, Int:[Project:Student] Nalloc, Student:[Project:Int] rank, Project[] projList, Student[] stdList, Supervisor[] supList)
 	{
 		//calculates the set of permutations
 		//do it once first
 		permute := shiftProjs(Nalloc, stdList, projList, rank, supList)
 		permPS := Int:[Project:Student][:]
 		permute.each |sp, i| { permPS[i] = [:]; sp.each |Project? p, Student s| { if(p != null) permPS[i][p] = s }  }
-		permute.each |v, k| { echo("$k: $v")}
+		echo(Nalloc)
+		echo(permPS)
+		//permute.each |v, k| { echo("$k: $v")}
 		permObjFn := Statistics.calcObjFn(rank, permPS)
 		a1 := permObjFn.vals.min
 		a := objFn.vals.min
@@ -319,12 +336,13 @@ class Optimise
 
 		}
 		//Nalloc.each |v, k| {echo("$k: $v") }
-		permute.each |v, k| { echo("$k: $v")}
-		return permute
+		//permute.each |v, k| { echo("$k: $v")}
+		return permPS
 	}
 	
 	static Void simAnneal(Int:Int objFn, Int:[Project:Student] alloc, Student:[Project:Int] rank, [Int:[Student:Project?]]? permute, Student[] stdList)
 	{
+		//performs simulated annealing on the initial allocation
 		/*	1) Select an initial value
 			2) Obtain the objective function
 			3) Select the reduction factor
@@ -391,15 +409,7 @@ class Optimise
 
 		//P_i = (ps(i)-ps(i-1))/ps(alloc.size-1)
 		
-		echo(objFn)
-		//permute.each |sp, i| { echo("$i: $sp")  }
-		/*
-		for(i := 0; i < 10; i++)
-		{
-			f := Float.random * 50f
-			echo("$f.toStr")
-		}
-		*/
+		//echo(objFn)
 		
 		RAND_MAX := 32767f
 		x := 10
