@@ -10,7 +10,7 @@ class Optimise
 	static Void main(Str[] args)
 	{
 		//this function's only job is to call statistics.fan with its parameters
-		Statistics.main([args[0], args[1], args[2]])
+		Statistics.main(args)
 		echo("Done!")
 
 	}
@@ -34,7 +34,7 @@ class Optimise
 	{
 		//used for probability bias in simulated annealing
 		num := 0f
-		(0..k).each { num += Float.e.pow(-T*extractObjfn(alloc, rank, stdList, 1)) }
+		(0..k).each { num += Float.e.pow(-T*extractObjfn(alloc, rank, stdList, it)) }
 		return num
 	}
 	
@@ -141,14 +141,13 @@ class Optimise
 							{
 								newStudProj[s1] = p2
 								newStudProj[s2] = p1
-								PSrw[p2] = s1
 							}
 							else
 							{
 								newStudProj[s1] = p2
 								newStudProj[s2] = null
-								PSrw[p2] = s1
 							}
+							PSrw[p2] = s1
 							supCount = countSup(supList, newStudProj)
 							curObjVal = calcObjVal(rank, newStudProj)
 							if(curObjVal < objVal)
