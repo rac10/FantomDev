@@ -108,7 +108,7 @@ const class Statistics
 					projTmp.each 
 					{
 						r := rankTmp[s][it]
-						if(r !=- 1)
+						if(r != -1)
 							rankProj[r].add(it)
 					}
 					

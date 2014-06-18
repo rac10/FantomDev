@@ -336,7 +336,7 @@ class Optimise
 		*/
 		a := Int[,]
 		objFn.each { a.add(it) }
-		a.sort |i, j| { return i <=> j  }
+        a.sort
 		echo(a)
 		//the below function gets the key for each of the values in the sorted array, a
 		a.each |i| { k := objFn.eachWhile |v, k| { i == v ? k : null}; echo(k) }
