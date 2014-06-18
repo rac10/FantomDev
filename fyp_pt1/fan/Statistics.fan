@@ -8,7 +8,7 @@ const class Statistics
 {	
 	static Void main(Str[] args)
 	{
-		//random initailisation of data
+		//random initialisation of data
 		Student[] stdList := [,]
 		Project[] projList := [,]
 		Supervisor[] supList := [,]
